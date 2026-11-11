@@ -1,9 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Northern Quote Desk</title>
 <meta name="robots" content="noindex,nofollow">
-<meta name="description" content="Demo: say a job, get a traceable draft quote. Sample rates, nothing sent.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>Northern Quote Desk (Private)</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Questrial&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 :root{
@@ -108,18 +106,50 @@ footer{color:var(--muted);font-size:13px;max-width:70ch}
 @media (max-width:420px){.fields{grid-template-columns:1fr}.rate{grid-template-columns:minmax(0,1fr) 96px}}
 @media (prefers-reduced-motion:no-preference){.panel{transition:border-color .2s}}
 </style>
+</head><body>
+<style>
+.private{background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:8px;padding:10px 12px;font-size:14px;display:flex;gap:10px}
+.private b{color:var(--accent)}
+.bids{display:grid;gap:12px}
+.bid{border:1px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:10px;background:var(--ground)}
+.bid .fields{grid-template-columns:repeat(3,minmax(0,1fr))}
+.bid select{padding:8px}
+.verdict{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;font:500 14px/1.3 var(--mono);font-variant-numeric:tabular-nums}
+.verdict .diff{padding:4px 8px;border-radius:4px}
+.d-ok{background:var(--ok-soft);color:var(--ok)} .d-warn{background:var(--warn-soft);color:var(--warn)} .d-stop{background:var(--stop-soft);color:var(--stop)}
+.sheetnotes{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14px}
+.sheetnotes small{color:var(--muted)}
+.rates h4{margin:8px 0 0;font:600 12px/1.2 var(--body);text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+@media (max-width:520px){.bid .fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+#printout{display:none}
+@media print{
+  @page{margin:16mm}
+  body{background:#fff!important;color:#000!important;padding:0!important}
+  body>*:not(#printout){display:none!important}
+  #printout{display:block;font:11pt/1.45 "IBM Plex Sans",Arial,sans-serif;color:#000}
+  #printout h1{font:400 20pt/1.1 "Questrial",Arial,sans-serif;margin:0 0 2mm}
+  #printout .sub{font-size:9pt;color:#444;margin-bottom:5mm}
+  #printout table{width:100%;border-collapse:collapse;margin:3mm 0 6mm;font-size:10pt}
+  #printout td{padding:1.5mm 0;border-bottom:.3mm solid #bbb;vertical-align:top;color:#000}
+  #printout td.n{text-align:right;font-family:"IBM Plex Mono",monospace;white-space:nowrap;padding-left:4mm}
+  #printout td .how{display:block;font:8pt/1.3 "IBM Plex Mono",monospace;color:#555}
+  #printout tr.total td{font-weight:700;font-size:12pt;border-bottom:none}
+  #printout pre{font:9pt/1.45 "IBM Plex Mono",monospace;white-space:pre-wrap;border:.3mm dashed #999;padding:4mm;margin:0;page-break-inside:avoid}
+  #printout h2{font:600 11pt/1.2 Arial,sans-serif;margin:5mm 0 1mm;text-transform:uppercase;letter-spacing:.05em}
+}
+</style>
 
 <div class="wrap">
   <header>
     <div class="brandbar" role="banner">
       <span class="mark" aria-hidden="true"></span>
       <span class="wordmark"><b>NORTHERN CONCRETE</b><small>REFINEMENT &amp; POLISHING CO.</small></span>
-      <span class="eyebrow">Phase 1 demo · v0.3</span>
+      <span class="eyebrow">Your prices · v1.1</span>
       <button class="themebtn" id="theme" type="button" aria-label="Switch light or dark">◐ Dark</button>
     </div>
     <h1>Quote Desk</h1>
-    <p class="lede">Say the job the way you'd say it to Sophia. The desk pulls out the numbers, stops and asks when something's missing, shows every line of the math, and waits for your OK. Nothing leaves this page.</p>
-    <div class="banner" role="note"><span>⚠</span><span><b>Sample rates, not Northern's.</b> Every dollar figure below is made up until your Works Plus workbook replaces it. You can type your own rates under “Rates” to try it.</span></div>
+    <p class="lede">This copy runs on the numbers in your pricing spreadsheet (“PRICING OG SHEET REWORKED SEPT 1 2024”, last saved Sept 30, 2026). Same math as the sheet, line by line. It opens on the example already in your sheet so you can check it lands on the same total.</p>
+    <div class="private" role="note"><span>🔒</span><span><b>Your real prices are on this page for a short time only.</b> Please don't share the link. Nothing you type here leaves your device.</span></div>
   </header>
 
   <div class="cols">
@@ -127,8 +157,8 @@ footer{color:var(--muted);font-size:13px;max-width:70ch}
       <h2 id="h-job">1 · The job</h2>
       <div class="field">
         <label for="say">Say or type it</label>
-        <textarea id="say" placeholder="e.g. Prepare John Doe's 10,000 square foot random exposure quote with 400 feet of edging"></textarea>
-        <span class="hint">On your Android phone, tap the 🎤 on your keyboard and just talk.</span>
+        <textarea id="say" placeholder="e.g. Polished for John Doe, 2000 square feet, 2 days, 120 km, 50% profit"></textarea>
+        <span class="hint">On your phone, tap the 🎤 on your keyboard and just talk. Say the service, square feet, days, km per day and profit.</span>
       </div>
       <div class="stack">
         <h3>Try one</h3>
@@ -137,23 +167,20 @@ footer{color:var(--muted);font-size:13px;max-width:70ch}
       <div class="stack">
         <h3>What the desk heard (fix anything)</h3>
         <div class="fields">
+          <div class="field full"><label>Service</label><div class="seg" id="f-svc"></div></div>
           <div class="field full"><label for="f-client">Client</label><input id="f-client" autocomplete="off"></div>
-          <div class="field"><label for="f-area">Floor area (sq ft)</label><input id="f-area" inputmode="numeric" autocomplete="off"></div>
-          <div class="field"><label for="f-edge">Edging (linear ft)</label><input id="f-edge" inputmode="numeric" autocomplete="off" placeholder="0 if none"></div>
-          <div class="field full"><label>Exposure</label><div class="seg" id="f-exp"></div></div>
-          <div class="field full"><label>Power grouting (PGT)</label><div class="seg" id="f-grout"></div></div>
+          <div class="field"><label for="f-area">Square feet</label><input id="f-area" inputmode="numeric" autocomplete="off"></div>
+          <div class="field"><label for="f-days">Days worked</label><input id="f-days" inputmode="decimal" autocomplete="off"></div>
+          <div class="field"><label for="f-km">Km per day (round trip)</label><input id="f-km" inputmode="numeric" autocomplete="off" placeholder="0 if local"></div>
+          <div class="field"><label for="f-profit">Profit %</label><input id="f-profit" inputmode="decimal" autocomplete="off"></div>
+          <div class="field full"><label for="f-extras">Extras ($): hotel, stipends, repairs…</label><input id="f-extras" inputmode="decimal" autocomplete="off" placeholder="0"></div>
         </div>
       </div>
-      <div class="stack">
-        <h3>Grit sequence for this exposure</h3>
-        <div class="grits" id="grits"></div>
-        <span class="hint">From your brief. <span class="tag todd">Todd's explanation</span> pending your check: the desk will ask you why before it's used with customers.</span>
-      </div>
       <details id="rates-box">
-        <summary>Rates</summary>
-        <p class="hint" style="margin-top:8px">Saved on this phone only. <span class="tag sample">sample</span> = made up · <span class="tag todd">Todd</span> = your rough figure from the brief · <span class="tag yours">yours</span> = you typed it.</p>
+        <summary>Your rates (from the spreadsheet)</summary>
+        <p class="hint" style="margin-top:8px">Change any number to try a what-if. Changes are saved on this device only; your spreadsheet isn't touched. <span class="tag todd">sheet</span> = straight from your file · <span class="tag yours">changed</span> = you changed it here.</p>
         <div class="rates" id="rates"></div>
-        <div class="row" style="margin-top:10px"><button class="btn ghost" id="reset-rates" type="button">Reset to sample rates</button></div>
+        <div class="row" style="margin-top:10px"><button class="btn ghost" id="reset-rates" type="button">Put back the spreadsheet numbers</button></div>
       </details>
     </section>
 
@@ -163,9 +190,8 @@ footer{color:var(--muted);font-size:13px;max-width:70ch}
       <div id="result" class="stack">
         <table aria-label="Price breakdown"><tbody id="lines"></tbody></table>
         <div class="stack">
-          <h3>Markup or margin? Same cost, different price</h3>
+          <h3>Your “profit” is a markup. Here's what that means</h3>
           <div class="compare" id="compare"></div>
-          <div class="field"><label>Price this quote using</label><div class="seg" id="f-mode"></div></div>
         </div>
         <div class="stack" id="flags-wrap"><h3>Flags for you</h3><div class="flags" id="flags"></div></div>
         <div class="stack">
@@ -177,272 +203,258 @@ footer{color:var(--muted);font-size:13px;max-width:70ch}
         <button class="btn" id="approve" type="button">Approve as draft</button>
         <button class="btn danger" id="reject" type="button">Reject</button>
         <button class="btn ghost" id="copy" type="button">Copy quote text</button>
+        <button class="btn ghost" id="print" type="button">Print quote</button>
       </div>
-      <p class="hint" id="copy-msg">Approving here records your OK on this draft only. It sends nothing, to no one. To send, you copy it and send it yourself.</p>
+      <p class="hint" id="copy-msg">Approving records your OK on this draft only. It sends nothing, to no one. To send, you copy it and send it yourself.</p>
       <div class="stack"><h3>Audit log</h3><div class="log" id="log"></div></div>
     </section>
   </div>
 
-  <footer>Built by Troy for Northern Concrete. Runs entirely in this page: no account, no AI service, no internet connection to anything after it loads. The same answer comes out every time for the same inputs. HST is Ontario's 13%. Next step: swap these sample rates for the formulas in your Works Plus workbook, then test it against three of your past jobs.</footer>
+  <section class="panel" aria-labelledby="h-bids">
+    <h2 id="h-bids">3 · Check it against your last bids</h2>
+    <p class="hint">Enter 3 or 4 jobs you actually bid. The desk prices each one with your spreadsheet and shows the difference from what you really quoted. Saved on this device only.</p>
+    <div class="bids" id="bids"></div>
+    <div class="row"><button class="btn ghost" id="add-bid" type="button">+ Add a bid</button></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-notes">
+    <h2 id="h-notes">Things we noticed in your spreadsheet</h2>
+    <p class="hint">Nothing has been changed. These are questions for you, not fixes. The desk copies your sheet exactly, including these.</p>
+    <ol class="sheetnotes">
+      <li><b>“Profit” is a markup.</b> 50% on cost is a 33% margin; 75% is a 43% margin. Is that what you mean by your 50–75% target?<br><small>Profit row: total cost × profit %</small></li>
+      <li><b>Days are typed in by hand.</b> Square footage only drives tooling and chemicals; crew cost comes from days. How do you decide the days for a job?</li>
+      <li><b>Per-sq-ft price includes HST.</b> Customers usually see before-tax prices. The desk shows both.</li>
+      <li><b>One formula looks broken.</b> “Angle Grinder Metals” cost per tool averages the segment counts instead of a price ($6.89). Small effect (about $0.003/sq ft).<br><small>Cell C50: =AVERAGE(A39:B57)</small></li>
+      <li><b>Some tooling rates are typed-in 0.02</b> rather than calculated (30/40 grit, 100 and 200 resin, 400 Reflect). For example 30/40 works out to 0.0215.</li>
+      <li><b>Minimal and Burnish carry a “Generator” charge of $0.53/sq ft;</b> Polished doesn't. That's most of why Minimal costs about double per sq ft. Intended?</li>
+      <li><b>Monthly costs ÷ 4</b> to get weekly. A month is about 4.33 weeks, so weekly overhead runs about 8% high. Maybe on purpose as a cushion?</li>
+      <li><b>US to Canadian dollars at 1.25</b> on tooling. Worth checking against today's rate.</li>
+      <li><b>Employees at $80/h and $70/h, owner at $53/h.</b> Real numbers, or placeholders?</li>
+      <li><b>The “Estimates” tab</b> isn't usable for past jobs: the Warehouse and Shop jobs have identical copied numbers, and the bottom block shows #DIV/0! errors. That's why section 3 asks for your real bids.</li>
+    </ol>
+  </section>
+
+  <footer>Built by Troy for Northern Concrete. Runs entirely in this file: no account, no AI service, nothing sent anywhere. Same inputs, same answer, every time. Next: you check it against your last bids, answer the questions above, and we decide together what (if anything) to change in the pricing.</footer>
 </div>
+<div id="printout" aria-hidden="true"></div>
 
 <script>
 (function(){
 const $=id=>document.getElementById(id);
-const EXPOSURES=[["cream","Cream"],["minimal","Minimal / S&P"],["random","Random"],["full","Full"]];
-const GRITS={
-  cream:[["hybrid?","h"],"200","400","800","1500"],
-  minimal:[["hybrid","h"],"100","200","400","800","1500"],
-  random:[["30 metal","m"],"PGT1","100","200","400","800","1500"],
-  full:[["30 metal","m"],"PGT2","100","200","400","800","1500","3000"]
-};
+const SERVICES=[["mpc","Polished (MPC)"],["minimal","Minimal Grind"],["burnish","Burnish Polish"],["mastic","Mastic Removal"]];
+const SVC_NAME=Object.fromEntries(SERVICES);
+/* [key,label,note,default,group,step] — defaults copied from the spreadsheet */
 const RATE_DEFS=[
-  ["sfPerDay","Sq ft per grinder-day","Your rough figure, not a promise",1000,"todd",1],
-  ["grinders","Grinders on the job","",2,"sample",1],
-  ["dayRate","Loaded cost per worker-day ($)","Wage + burden",320,"sample",1],
-  ["slowRandom","Extra time, random (×)","vs cream/minimal",1.25,"sample",0.05],
-  ["slowFull","Extra time, full (×)","vs cream/minimal",1.5,"sample",0.05],
-  ["toolCream","Tooling $/sq ft, cream","",0.02,"sample",0.01],
-  ["toolMinimal","Tooling $/sq ft, minimal","",0.03,"sample",0.01],
-  ["toolRandom","Tooling $/sq ft, random","",0.05,"sample",0.01],
-  ["toolFull","Tooling $/sq ft, full","",0.06,"sample",0.01],
-  ["chem","Densifier + guard $/sq ft","",0.18,"sample",0.01],
-  ["grout","Power grout $/sq ft","Material",0.12,"sample",0.01],
-  ["groutTime","Grout extra time (×)","",1.15,"sample",0.05],
-  ["edge","Edging $/linear ft","Labour + tooling",3.5,"sample",0.25],
-  ["mob","Mobilization per job ($)","Truck, load-in, travel",350,"sample",25],
-  ["overhead","Overhead (% of direct cost)","Check: not double-counted",12,"sample",1],
-  ["target","Target (%)","Markup or gross margin, see below",35,"sample",1],
-  ["hst","HST (%)","Ontario",13,"law",1]
+  ["owner","Owner $/hour","",53,"Crew (per day)",1],
+  ["emp1","Employee 1 $/hour","",80,"Crew (per day)",1],
+  ["emp2","Employee 2 $/hour","",70,"Crew (per day)",1],
+  ["hours","Hours in a day","",12,"Crew (per day)",0.5],
+  ["empTax","Employer taxes %","applied to all three",26,"Crew (per day)",1],
+  ["weekDays","Work days per week","",5,"Weekly costs",1],
+  ["equipWk","Equipment depreciation $/week","single set-up total",128,"Weekly costs",1],
+  ["insurance","Insurance (GL, WC) $/month","",1265.38,"Admin (monthly, ÷4 = weekly)",1],
+  ["software","Accounting/payroll software $/month","",1200,"Admin (monthly, ÷4 = weekly)",1],
+  ["health","Health insurance $/month","",500,"Admin (monthly, ÷4 = weekly)",1],
+  ["lease","Equipment lease $/month","",6624.66,"Admin (monthly, ÷4 = weekly)",1],
+  ["web","Website and email $/month","",200,"Admin (monthly, ÷4 = weekly)",1],
+  ["filing","Filing $/month","listed as “LLC filing”",350,"Admin (monthly, ÷4 = weekly)",1],
+  ["misc","Sophia and other overhead $/month","",3000,"Admin (monthly, ÷4 = weekly)",1],
+  ["weeksPerMonth","Weeks per month","your sheet uses 4",4,"Admin (monthly, ÷4 = weekly)",0.01],
+  ["tMpc","Tooling + chemicals $/sq ft: Polished","",0.53286955409356729,"Tooling and chemicals",0.001],
+  ["tMinimal","Tooling + chemicals $/sq ft: Minimal","includes generator 0.5275",1.0696476790935672,"Tooling and chemicals",0.001],
+  ["tBurnish","Tooling + chemicals $/sq ft: Burnish","includes generator 0.5275",0.7606653874269006,"Tooling and chemicals",0.001],
+  ["tMastic","Tooling + chemicals $/sq ft: Mastic","",0.018729276315789471,"Tooling and chemicals",0.001],
+  ["kmRate","Mileage $/km","",0.65,"Mileage and tax",0.01],
+  ["hst","HST %","Ontario",13,"Mileage and tax",1]
 ];
 const EXAMPLES=[
-  "Prepare John Doe's 10,000 square foot random exposure quote with 400 feet of edging and power grout",
-  "Prepare John Doe's 10,000 square foot random exposure quote with 400 feet of edging",
-  "Quote for Sarah Lee, 2,400 sq ft basement, minimal exposure, no grout, 180 feet of edging",
-  "Full exposure for Mike's shop, 6500 square feet, power grout, 320 linear feet edging"
+  "Polished, 2000 square feet, 2 days, 120 km, 50% profit (the example in your sheet)",
+  "Minimal grind for John Doe, 1000 sq ft, 3 days, 120 km, extras $1200, 50% profit",
+  "Burnish polish, 880 square feet, 5 days, 256 km, extras $7500, 30% profit",
+  "Mastic removal 2400 sq ft, 1 day, 36 km",
 ];
-const store={get(k){try{return JSON.parse(localStorage.getItem("nqd."+k))}catch(e){return null}},set(k,v){try{localStorage.setItem("nqd."+k,JSON.stringify(v))}catch(e){}}};
-
-let rates={}, mine=store.get("mine")||{};
-function loadRates(){RATE_DEFS.forEach(([k,,,d])=>rates[k]=d);const saved=store.get("rates")||{};Object.keys(saved).forEach(k=>{if(k in rates)rates[k]=saved[k]})}
+const store={get(k){try{return JSON.parse(localStorage.getItem("nqdp."+k))}catch(e){return null}},set(k,v){try{localStorage.setItem("nqdp."+k,JSON.stringify(v))}catch(e){}}};
+let rates={},changedRates=store.get("changed")||{};
+function loadRates(){RATE_DEFS.forEach(r=>rates[r[0]]=r[3]);const s=store.get("rates")||{};for(const k in s)if(k in rates)rates[k]=s[k]}
 loadRates();
-let job={client:"",area:null,edge:null,exposure:null,grout:null};
-let mode=store.get("mode")||"margin";
-let approval=null; // {hash, at}
-const log=[];
+let job={svc:null,client:"",area:null,days:null,km:null,profit:null,extras:0};
+let approval=null;const log=[];
 
-/* ---------- parsing (plain rules, no AI) ---------- */
-const WORDNUM={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,twelve:12,fifteen:15,twenty:20,thirty:30,forty:40,fifty:50};
-function num(s){
-  if(!s)return null; s=s.toLowerCase().replace(/,/g,"").trim();
-  let m=s.match(/^(\d+(?:\.\d+)?|[a-z]+)\s*(k|thousand|hundred)?$/);
-  if(!m)return null;
-  let n=/^\d/.test(m[1])?parseFloat(m[1]):WORDNUM[m[1]]; if(n==null)return null;
-  if(m[2]==="k"||m[2]==="thousand")n*=1000; if(m[2]==="hundred")n*=100;
-  return Math.round(n);
-}
-const N="(\\d[\\d,]*(?:\\.\\d+)?\\s*(?:k|thousand|hundred)?|[a-z]+\\s+(?:thousand|hundred))";
+/* ---------- parsing ---------- */
+const WORD={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,half:0.5};
+const n=s=>{if(s==null)return null;s=String(s).toLowerCase().replace(/[,$\s]/g,"");if(s in WORD)return WORD[s];let m=s.match(/^(\d+(?:\.\d+)?)(k|thousand)?$/);if(!m)return null;let v=parseFloat(m[1]);if(m[2])v*=1000;return v};
+const NUM="(\\d[\\d,]*(?:\\.\\d+)?\\s*(?:k|thousand)?|one|two|three|four|five|six|seven|eight|nine|ten)";
 function parse(t){
-  const out={}; const s=" "+t.replace(/[’']/g,"'")+" ";
-  let m=s.match(new RegExp(N+"\\s*(?:-|\\s)?(?:sq\\.?\\s*(?:ft|feet|foot)|square[-\\s]?(?:foot|feet|ft)|sf\\b|sqft)","i"));
-  if(m)out.area=num(m[1]);
-  if(/\bno\s+edg/i.test(s))out.edge=0;
-  else{
-    m=s.match(new RegExp(N+"\\s*(?:linear\\s*|lin\\.?\\s*)?(?:feet|foot|ft|lf)\\b\\s*(?:of\\s+)?edg","i"))
-     ||s.match(new RegExp("edg\\w*\\s*(?:of|:)?\\s*"+N+"\\s*(?:linear\\s*)?(?:feet|foot|ft|lf)?","i"));
-    if(m)out.edge=num(m[1]);
-  }
-  if(/\bcream\b/i.test(s))out.exposure="cream";
-  else if(/\b(minimal|salt[\s-]*(and|&|n)[\s-]*pepper|s&p)\b/i.test(s))out.exposure="minimal";
-  else if(/\brandom\b/i.test(s))out.exposure="random";
-  else if(/\bfull\b/i.test(s))out.exposure="full";
-  if(/\b(no|without|skip)\s+(power\s+)?(grout|pgt)/i.test(s))out.grout=false;
-  else if(/\b(grout|pgt)/i.test(s))out.grout=true;
-  m=s.match(/\b(?:[Pp]repare|[Qq]uote\s+for|for)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)(?:'s)?/);
-  if(m&&!/^(Random|Full|Minimal|Cream|The|A)$/.test(m[1]))out.client=m[1]+(/'s\s+shop/i.test(s)?"'s shop":"");
-  return out;
+  const o={},s=" "+t.replace(/[’']/g,"'")+" ";let m;
+  if(/mastic/i.test(s))o.svc="mastic";else if(/burnish/i.test(s))o.svc="burnish";else if(/minimal/i.test(s))o.svc="minimal";else if(/polish|mpc|mechanical/i.test(s))o.svc="mpc";
+  if(m=s.match(new RegExp(NUM+"\\s*(?:-|\\s)?(?:sq\\.?\\s*(?:ft|feet|foot)|square[-\\s]?(?:foot|feet|ft)|sf\\b|sqft)","i")))o.area=n(m[1]);
+  if(m=s.match(new RegExp(NUM+"\\s*(?:and a half\\s*)?(?:working\\s*)?days?\\b","i"))){o.days=n(m[1]);if(/and a half\s*(working\s*)?days?/i.test(m[0]))o.days+=0.5}
+  if(m=s.match(new RegExp(NUM+"\\s*(?:km|kms|kilomet)","i")))o.km=n(m[1]);
+  if(/\blocal\b|no (?:km|mileage|travel)/i.test(s))o.km=0;
+  if(m=s.match(/(\d+(?:\.\d+)?)\s*(?:%|percent)/i))o.profit=parseFloat(m[1]);
+  if(m=s.match(/extras?\s*(?:of\s*)?\$?\s*(\d[\d,]*(?:\.\d+)?)/i)||s.match(/\$\s*(\d[\d,]*(?:\.\d+)?)\s*(?:in\s*)?extras?/i))o.extras=n(m[1]);
+  if(m=s.match(/\b(?:for|[Qq]uote\s+for)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/))o.client=m[1];
+  return o;
 }
 
-/* ---------- math (deterministic) ---------- */
-const money=n=>"$"+n.toLocaleString("en-CA",{minimumFractionDigits:2,maximumFractionDigits:2});
-const r2=n=>Math.round(n*100)/100;
-function compute(){
-  const R=rates, j=job, tool={cream:R.toolCream,minimal:R.toolMinimal,random:R.toolRandom,full:R.toolFull}[j.exposure];
-  const slow={cream:1,minimal:1,random:R.slowRandom,full:R.slowFull}[j.exposure];
-  const gf=j.grout?R.groutTime:1;
-  const rawDays=j.area*slow*gf/(R.sfPerDay*R.grinders);
-  const days=Math.max(0.5,Math.ceil(rawDays*2)/2);
-  const L=[];
-  const labour=r2(days*R.grinders*R.dayRate);
-  L.push(["Labour",labour,`${days} days × ${R.grinders} workers × ${money(R.dayRate)}  (${fmt(j.area)} sf × ${slow}${j.grout?" × "+R.groutTime+" grout":""} ÷ ${fmt(R.sfPerDay*R.grinders)} sf/day, rounded up to ½ day)`]);
-  const tl=r2(j.area*tool); L.push(["Tooling",tl,`${fmt(j.area)} sf × ${money(tool)}/sf`]);
-  const ch=r2(j.area*R.chem); L.push(["Densifier + guard",ch,`${fmt(j.area)} sf × ${money(R.chem)}/sf`]);
-  if(j.grout){const g=r2(j.area*R.grout);L.push(["Power grout material",g,`${fmt(j.area)} sf × ${money(R.grout)}/sf`])}
-  if(j.edge>0){const e=r2(j.edge*R.edge);L.push(["Edging",e,`${fmt(j.edge)} lf × ${money(R.edge)}/lf`])}
-  L.push(["Mobilization",r2(R.mob),"flat per job"]);
-  const direct=r2(L.reduce((a,l)=>a+l[1],0));
-  const oh=r2(direct*R.overhead/100);
-  const cost=r2(direct+oh);
-  const t=R.target/100;
-  const pMarkup=r2(cost*(1+t)), pMargin=t<1?r2(cost/(1-t)):NaN;
-  const price=mode==="margin"?pMargin:pMarkup;
-  const hst=r2(price*R.hst/100);
-  return {L,direct,oh,cost,pMarkup,pMargin,price,hst,total:r2(price+hst),days,t};
+/* ---------- the spreadsheet's math ---------- */
+const money=x=>(x<0?"−$":"$")+Math.abs(x).toLocaleString("en-CA",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt=x=>Number(x).toLocaleString("en-CA",{maximumFractionDigits:4});
+function base(R){
+  const crewDay=(R.owner+R.emp1+R.emp2)*R.hours*(1+R.empTax/100);
+  const adminMonth=R.insurance+R.software+R.health+R.lease+R.web+R.filing+R.misc;
+  const adminWk=adminMonth/R.weeksPerMonth;
+  return {crewDay,adminMonth,adminWk};
 }
-const fmt=n=>Number(n).toLocaleString("en-CA");
+function price(j,R){
+  const b=base(R),tool={mpc:R.tMpc,minimal:R.tMinimal,burnish:R.tBurnish,mastic:R.tMastic}[j.svc];
+  const wk=j.days/R.weekDays,L=[];
+  L.push(["Crew",j.days*b.crewDay,`${fmt(j.days)} days × ${money(b.crewDay)}/day  (owner + 2 employees × ${R.hours} h + ${R.empTax}% employer taxes)`]);
+  L.push(["Tooling and chemicals",j.area*tool,`${fmt(j.area)} sq ft × $${tool.toFixed(4)}/sq ft (${SVC_NAME[j.svc]})`]);
+  L.push(["Equipment depreciation",wk*R.equipWk,`${fmt(j.days)} ÷ ${R.weekDays} = ${fmt(wk)} weeks × ${money(R.equipWk)}/week`]);
+  L.push(["Admin",wk*b.adminWk,`${fmt(wk)} weeks × ${money(b.adminWk)}/week  (${money(b.adminMonth)}/month ÷ ${R.weeksPerMonth})`]);
+  L.push(["Mileage",j.days*j.km*R.kmRate,`${fmt(j.days)} days × ${fmt(j.km)} km × ${money(R.kmRate)}/km`]);
+  if(j.extras)L.push(["Extras",j.extras,"as entered"]);
+  const cost=L.reduce((a,l)=>a+l[1],0),p=j.profit/100;
+  const pre=cost*(1+p),hst=pre*R.hst/100,total=pre+hst;
+  return {L,cost,p,pre,hst,total,psfPre:pre/j.area,psfTotal:total/j.area,marginPrice:p<1?cost/(1-p):NaN,realMargin:(pre-cost)/pre};
+}
 function hashOf(o){const s=JSON.stringify(o);let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;return h.toString(16).padStart(8,"0")}
 
-/* ---------- render ---------- */
-function seg(el,opts,cur,on){
-  el.innerHTML="";opts.forEach(([v,l])=>{const b=document.createElement("button");b.type="button";b.textContent=l;b.setAttribute("aria-pressed",String(cur===v));b.onclick=()=>on(v);el.appendChild(b)});
-}
+/* ---------- render: job ---------- */
+function seg(el,opts,cur,on){el.innerHTML="";opts.forEach(([v,l])=>{const b=document.createElement("button");b.type="button";b.textContent=l;b.setAttribute("aria-pressed",String(cur===v));b.onclick=()=>on(v);el.appendChild(b)})}
 function renderFields(){
-  $("f-client").value=job.client||"";$("f-area").value=job.area??"";$("f-edge").value=job.edge??"";
-  seg($("f-exp"),EXPOSURES,job.exposure,v=>{job.exposure=v;changed("Exposure set to "+v)});
-  seg($("f-grout"),[[true,"Yes, include"],[false,"No grout"]],job.grout,v=>{job.grout=v;changed("Grouting: "+(v?"included":"not included"))});
-  seg($("f-mode"),[["margin","Gross margin"],["markup","Markup"]],mode,v=>{mode=v;store.set("mode",v);changed("Pricing method: "+v)});
-  const g=$("grits");g.innerHTML="";
-  if(!job.exposure){g.innerHTML='<i>Pick an exposure</i>';}
-  else GRITS[job.exposure].forEach((x,i)=>{if(i)g.insertAdjacentHTML("beforeend","<i>→</i>");const sp=document.createElement("span");if(Array.isArray(x)){sp.textContent=x[0];if(x[1]==="m")sp.className="metal"}else sp.textContent=x;g.appendChild(sp)});
+  seg($("f-svc"),SERVICES,job.svc,v=>{job.svc=v;changed("Service: "+SVC_NAME[v])});
+  $("f-client").value=job.client||"";$("f-area").value=job.area??"";$("f-days").value=job.days??"";
+  $("f-km").value=job.km??"";$("f-profit").value=job.profit??"";$("f-extras").value=job.extras||"";
 }
-function renderRates(){
-  const box=$("rates");box.innerHTML="";
-  RATE_DEFS.forEach(([k,l,sub,d,src,step])=>{
-    const row=document.createElement("div");row.className="rate";
-    const tag=mine[k]?'<span class="tag yours">yours</span>':`<span class="tag ${src}">${src==="law"?"Ontario":src}</span>`;
-    row.innerHTML=`<label class="lbl" for="r-${k}">${l}${tag}${sub?`<small>${sub}</small>`:""}</label><input id="r-${k}" type="number" step="${step}" inputmode="decimal" value="${rates[k]}">`;
-    row.querySelector("input").addEventListener("change",e=>{const v=parseFloat(e.target.value);if(!isFinite(v)||v<0){e.target.value=rates[k];return}rates[k]=v;mine[k]=v!==d;store.set("rates",rates);store.set("mine",mine);renderRates();changed(`Rate changed: ${l} = ${v}`)});
-    box.appendChild(row);
-  });
-}
-function missing(){
-  const q=[];
-  if(!job.area)q.push("How many square feet is the floor?");
-  if(!job.exposure)q.push("Which exposure: cream, minimal, random or full?");
-  if(job.edge==null||job.edge==="")q.push("How many linear feet of edging? Say 0 if none.");
-  if(job.grout==null)q.push("Include power grouting (PGT)? Yes or no.");
-  if(rates.target>=100&&mode==="margin")q.push("A gross margin of 100% or more is impossible. Lower the target.");
-  return q;
-}
-function flags(c){
-  const f=[];
-  if(job.grout===false)f.push(["No grout step in scope.","Pinholes, voids and small surface defects may stay visible. Add a line to the quote saying so, or offer grouting as an option.","From your brief, section 5.4"]);
-  if(job.exposure==="minimal"||job.exposure==="cream")f.push(["Hybrid / light start.","A hybrid start removes less material than 30-grit metal, so it may not correct original placing or finishing defects. Does the client know that?","Your explanation, pending your check"]);
-  if(job.exposure==="full"||job.exposure==="random")f.push(["Heavier cut.","Aggregate can show unevenly where slab cover varies. Confirm the client accepts natural variation.","From your brief, section 5.4"]);
-  if(mode==="markup")f.push(["Priced on markup.",`A ${rates.target}% markup is only a ${(c.t/(1+c.t)*100).toFixed(1)}% gross margin. Make sure that's what you mean.`,"Brief, section 5.2"]);
-  if(rates.overhead>0)f.push(["Overhead at "+rates.overhead+"%.","Check it isn't counted twice: once here and again inside the day rate or the workbook.","Brief, section 5.2"]);
-  if(Object.keys(mine).filter(k=>mine[k]).length<RATE_DEFS.length-2)f.push(["Sample rates in use.","This price is a demonstration. Don't send it to a customer until your Works Plus numbers replace the samples.","Demo rule"]);
-  return f;
-}
+function missing(){const q=[];
+  if(!job.svc)q.push("Which service: polished, minimal grind, burnish or mastic removal?");
+  if(!job.area)q.push("How many square feet?");
+  if(!job.days)q.push("How many days will it take?");
+  if(job.km==null)q.push("How many km per day, round trip? Say 0 if local.");
+  if(job.profit==null)q.push("What profit % on this one?");
+  return q}
+function flags(c){const f=[];
+  f.push(["Profit is a markup.",`${job.profit}% on top of cost is a ${(c.realMargin*100).toFixed(1)}% margin.`,"Your sheet: profit = total cost × profit %"]);
+  if(job.svc==="minimal"||job.svc==="burnish")f.push(["Generator charge included.",`${money(job.area*0.5275)} of tooling on this job is the generator line ($0.5275/sq ft). Polished doesn't carry it.`,"Tooling table, “Generator” row"]);
+  const sfDay=job.area/job.days;f.push(["Production check.",`This works out to ${fmt(Math.round(sfDay))} sq ft per crew-day. Does that match how fast you really go on this kind of floor?`,"Days are typed in by hand"]);
+  if(Object.keys(changedRates).some(k=>changedRates[k]))f.push(["What-if numbers in use.","Some rates were changed here and no longer match your spreadsheet.","See “Your rates”"]);
+  return f}
 function quoteText(c,h){
-  const d=new Date();const no="DRAFT-"+d.toISOString().slice(0,10).replace(/-/g,"")+"-"+h.slice(0,4).toUpperCase();
-  const exp=EXPOSURES.find(e=>e[0]===job.exposure)[1];
-  const L=[];
-  L.push("NORTHERN CONCRETE REFINEMENT & POLISHING CO.");
-  L.push("*** DRAFT — NOT SENT — SAMPLE RATES ***");
-  L.push("");
-  L.push("Quote no.:  "+no);
-  L.push("Prepared:   "+d.toLocaleDateString("en-CA",{year:"numeric",month:"long",day:"numeric"}));
-  L.push("Client:     "+(job.client||"(client name needed)"));
-  L.push("");
-  L.push("SCOPE");
-  L.push(`- Mechanically polished concrete, ${exp.toLowerCase()} exposure: ${fmt(job.area)} sq ft`);
-  L.push("- Grit sequence: "+GRITS[job.exposure].map(x=>Array.isArray(x)?x[0]:x).join(" > "));
-  L.push(job.grout?"- Power grouting and densification":"- Densification (no grouting)");
-  if(job.edge>0)L.push(`- Edging: ${fmt(job.edge)} linear ft`);
-  L.push("- Penetrating protective guard");
-  L.push(`- Estimated production: ${c.days} working days`);
-  L.push("");
+  const d=new Date(),no="DRAFT-"+d.toISOString().slice(0,10).replace(/-/g,"")+"-"+h.slice(0,4).toUpperCase(),L=[];
+  L.push("NORTHERN CONCRETE REFINEMENT & POLISHING CO.","*** DRAFT — NOT SENT ***","");
+  L.push("Quote no.:  "+no,"Prepared:   "+d.toLocaleDateString("en-CA",{year:"numeric",month:"long",day:"numeric"}),"Client:     "+(job.client||"(client name needed)"),"");
+  L.push("SCOPE","- "+SVC_NAME[job.svc]+": "+fmt(job.area)+" sq ft","- Estimated time on site: "+fmt(job.days)+" working days","");
   L.push("PRICE");
-  L.push(("Price before HST").padEnd(24)+money(c.price).padStart(14));
-  L.push(("HST "+rates.hst+"%").padEnd(24)+money(c.hst).padStart(14));
-  L.push(("Total").padEnd(24)+money(c.total).padStart(14));
-  L.push(("Per sq ft before HST").padEnd(24)+money(c.price/job.area).padStart(14));
-  L.push("");
-  L.push("WHAT TO EXPECT");
-  if(!job.grout)L.push("- Grouting is not included. Pinholes, voids and minor surface");
-  if(!job.grout)L.push("  defects may remain visible.");
-  if(job.exposure==="minimal"||job.exposure==="cream"){L.push("- This exposure removes little surface material. Existing");L.push("  finishing marks or defects may remain visible.");}
-  if(job.exposure==="random"||job.exposure==="full"){L.push("- Aggregate exposure varies with the slab. Natural variation");L.push("  in stone size and spread is expected.");}
-  L.push("- Existing cracks, cold joints and patches may stay visible.");
-  L.push("- Gloss is described by appearance; no measured gloss");
-  L.push("  reading is promised unless stated.");
-  L.push("");
-  L.push("EXCLUSIONS (to be confirmed by Todd)");
-  L.push("- Crack and joint filling, repairs, coating removal,");
-  L.push("  moving furniture or equipment, unless listed above.");
-  L.push("");
-  L.push("Valid 30 days. Prices in CAD.");
-  L.push("");
-  L.push("--- traceability ---");
-  L.push("Inputs+rates fingerprint: "+h+"   Pricing: "+(mode==="margin"?"gross margin "+rates.target+"%":"markup "+rates.target+"%"));
-  L.push("Rates: SAMPLE (demo v0.1), not the Works Plus workbook.");
-  return L.join("\n");
-}
-function state(){return {job,rates,mode}}
+  const row=(a,b)=>L.push(a.padEnd(26)+b.padStart(14));
+  row("Price before HST",money(c.pre));row("HST "+rates.hst+"%",money(c.hst));row("Total",money(c.total));
+  row("Per sq ft before HST",money(c.psfPre));row("Per sq ft with HST",money(c.psfTotal));
+  L.push("","WHAT TO EXPECT (wording to be approved by Todd)","- Existing cracks, joints, patches and slab defects may","  remain visible unless repair is listed in the scope.","- Gloss is described by appearance; no measured gloss","  reading is promised unless stated.","");
+  L.push("Valid 30 days. Prices in CAD.","","--- traceability ---","Inputs+rates fingerprint: "+h,"Math: Todd's pricing spreadsheet (saved 2026-09-30), profit as markup.");
+  return L.join("\n")}
 function render(){
   renderFields();
-  const q=missing(), st=$("status"), ask=$("ask"), res=$("result");
-  const ap=$("approve"), rj=$("reject"), cp=$("copy");
-  if(q.length){
-    st.className="status st-stop";st.textContent="Needs your answer";
-    ask.hidden=false;ask.innerHTML="<b>The desk won't guess. It needs:</b><ul>"+q.map(x=>"<li>"+x+"</li>").join("")+"</ul>";
-    res.hidden=true;ap.disabled=rj.disabled=cp.disabled=true;return;
-  }
-  ask.hidden=true;res.hidden=false;ap.disabled=rj.disabled=cp.disabled=false;
-  const c=compute(), h=hashOf(state());
-  if(approval&&approval.hash!==h){approval=null;addLog("Inputs changed after approval. Approval cleared; needs a new OK.")}
-  if(approval){st.className="status st-ok";st.textContent="Approved: draft only";ap.disabled=true}
-  else{st.className="status st-draft";st.textContent="Draft ready · waiting on you"}
-  const rows=c.L.map(([n,v,how])=>`<tr><td>${n}<span class="how">${how}</span></td><td class="n">${money(v)}</td></tr>`);
-  rows.push(`<tr class="sub"><td>Direct cost</td><td class="n">${money(c.direct)}</td></tr>`);
-  rows.push(`<tr><td>Overhead<span class="how">${money(c.direct)} × ${rates.overhead}%</span></td><td class="n">${money(c.oh)}</td></tr>`);
+  const q=missing(),st=$("status"),ask=$("ask"),res=$("result"),ap=$("approve"),rj=$("reject"),cp=$("copy");
+  if(q.length){st.className="status st-stop";st.textContent="Needs your answer";ask.hidden=false;
+    ask.innerHTML="<b>The desk won't guess. It needs:</b><ul>"+q.map(x=>"<li>"+x+"</li>").join("")+"</ul>";res.hidden=true;ap.disabled=rj.disabled=cp.disabled=$("print").disabled=true;store.set("job",job);return}
+  ask.hidden=true;res.hidden=false;ap.disabled=rj.disabled=cp.disabled=$("print").disabled=false;
+  const c=price(job,rates),h=hashOf({job,rates});
+  if(approval&&approval!==h){approval=null;addLog("Inputs changed after approval. Approval cleared; needs a new OK.")}
+  if(approval){st.className="status st-ok";st.textContent="Approved: draft only";ap.disabled=true}else{st.className="status st-draft";st.textContent="Draft ready · waiting on you"}
+  const rows=c.L.map(([a,v,how])=>`<tr><td>${a}<span class="how">${how}</span></td><td class="n">${money(v)}</td></tr>`);
   rows.push(`<tr class="sub"><td>Total cost</td><td class="n">${money(c.cost)}</td></tr>`);
-  rows.push(`<tr><td>Price before HST<span class="how">${mode==="margin"?`${money(c.cost)} ÷ (1 − ${c.t})`:`${money(c.cost)} × (1 + ${c.t})`} · ${money(c.price/job.area)}/sf</span></td><td class="n">${money(c.price)}</td></tr>`);
-  rows.push(`<tr><td>HST<span class="how">${money(c.price)} × ${rates.hst}%</span></td><td class="n">${money(c.hst)}</td></tr>`);
-  rows.push(`<tr class="total"><td>Total</td><td class="n">${money(c.total)}</td></tr>`);
+  rows.push(`<tr><td>Profit (markup)<span class="how">${money(c.cost)} × ${job.profit}%</span></td><td class="n">${money(c.pre-c.cost)}</td></tr>`);
+  rows.push(`<tr class="sub"><td>Price before HST<span class="how">${money(c.psfPre)}/sq ft</span></td><td class="n">${money(c.pre)}</td></tr>`);
+  rows.push(`<tr><td>HST<span class="how">${money(c.pre)} × ${rates.hst}%</span></td><td class="n">${money(c.hst)}</td></tr>`);
+  rows.push(`<tr class="total"><td>Grand total<span class="how">${money(c.psfTotal)}/sq ft with HST (your sheet's “per sqft price”)</span></td><td class="n">${money(c.total)}</td></tr>`);
   $("lines").innerHTML=rows.join("");
-  const realMargin=(c.pMarkup-c.cost)/c.pMarkup*100;
-  $("compare").innerHTML=`<div class="${mode==="markup"?"on":""}"><small>${rates.target}% markup</small><b>${money(c.pMarkup)}</b><small>real margin ${realMargin.toFixed(1)}%</small></div><div class="${mode==="margin"?"on":""}"><small>${rates.target}% gross margin</small><b>${money(c.pMargin)}</b><small>${money(c.pMargin-c.pMarkup)} more on this job</small></div>`;
-  const f=flags(c);$("flags").innerHTML=f.map(([a,b,s])=>`<div class="flag"><b>${a}</b> ${b}<small>${s}</small></div>`).join("");
+  $("compare").innerHTML=`<div class="on"><small>${job.profit}% markup (your sheet)</small><b>${money(c.pre)}</b><small>real margin ${(c.realMargin*100).toFixed(1)}%</small></div>`+
+    (c.p<1?`<div><small>if ${job.profit}% were margin</small><b>${money(c.marginPrice)}</b><small>${money(c.marginPrice-c.pre)} more, before HST</small></div>`:`<div><small>${job.profit}% as a margin</small><b>impossible</b><small>a margin can't reach 100%</small></div>`);
+  $("flags").innerHTML=flags(c).map(([a,b,s])=>`<div class="flag"><b>${a}</b> ${b}<small>${s}</small></div>`).join("");
   $("quote").textContent=quoteText(c,h);
-  store.set("job",job);
+  $("printout").innerHTML=`<h1>Northern Concrete · Quote check</h1><div class="sub">${SVC_NAME[job.svc]} · ${fmt(job.area)} sq ft · ${fmt(job.days)} days · ${fmt(job.km)} km/day · ${job.profit}% profit${job.client?" · "+job.client.replace(/</g,"&lt;"):""} · printed ${new Date().toLocaleString("en-CA")}</div><h2>How the price was worked out</h2><table>${$("lines").innerHTML}</table><h2>Draft quote</h2><pre></pre>`;
+  $("printout").querySelector("pre").textContent=$("quote").textContent;
+  store.set("job",job);renderBids();
 }
-function addLog(msg){const t=new Date().toLocaleTimeString("en-CA",{hour:"2-digit",minute:"2-digit",second:"2-digit"});log.unshift([t,msg]);if(log.length>40)log.pop();$("log").innerHTML=log.map(([t,m])=>`<div><b>${t}</b> ${m}</div>`).join("")}
-let lastMsg="";function changed(msg){if(msg&&msg!==lastMsg){addLog(msg);lastMsg=msg}render()}
+function addLog(m){const t=new Date().toLocaleTimeString("en-CA",{hour:"2-digit",minute:"2-digit",second:"2-digit"});log.unshift([t,m]);if(log.length>40)log.pop();$("log").innerHTML=log.map(([t,m])=>`<div><b>${t}</b> ${m}</div>`).join("")}
+let last="";function changed(m){if(m&&m!==last){addLog(m);last=m}render()}
+
+/* ---------- rates panel ---------- */
+function renderRates(){
+  const box=$("rates");box.innerHTML="";let g="";
+  RATE_DEFS.forEach(([k,l,note,d,grp,step])=>{
+    if(grp!==g){g=grp;box.insertAdjacentHTML("beforeend",`<h4>${grp}</h4>`)}
+    const row=document.createElement("div");row.className="rate";
+    const tag=changedRates[k]?'<span class="tag yours">changed</span>':'<span class="tag todd">sheet</span>';
+    row.innerHTML=`<label class="lbl" for="r-${k}">${l}${tag}${note?`<small>${note}</small>`:""}</label><input id="r-${k}" type="number" step="${step}" inputmode="decimal" value="${+rates[k].toFixed(4)}">`;
+    row.querySelector("input").addEventListener("change",e=>{const v=parseFloat(e.target.value);if(!isFinite(v)||v<0||(k==="weekDays"||k==="weeksPerMonth")&&v===0){e.target.value=rates[k];return}
+      rates[k]=v;changedRates[k]=Math.abs(v-d)>1e-9;store.set("rates",rates);store.set("changed",changedRates);renderRates();changed(`What-if: ${l} = ${v}`)});
+    box.appendChild(row)});
+  const b=base(rates);box.insertAdjacentHTML("beforeend",`<p class="hint">Works out to: crew ${money(b.crewDay)}/day · admin ${money(b.adminWk)}/week · equipment ${money(rates.equipWk)}/week.</p>`);
+}
+
+/* ---------- past bids ---------- */
+let bids=store.get("bids")||[{name:"",svc:"mpc",area:"",days:"",km:"",profit:"",extras:"",bid:"",withHst:"yes"}];
+function renderBids(){
+  const box=$("bids");if(box.contains(document.activeElement))return;box.innerHTML="";
+  bids.forEach((b,i)=>{
+    const el=document.createElement("div");el.className="bid";
+    el.innerHTML=`<div class="fields">
+      <div class="field" style="grid-column:1/-1"><label for="b${i}-name">Job</label><input id="b${i}-name" data-k="name" value="${(b.name||"").replace(/"/g,"&quot;")}" placeholder="e.g. Smith basement, spring 2026"></div>
+      <div class="field"><label for="b${i}-svc">Service</label><select id="b${i}-svc" data-k="svc">${SERVICES.map(([v,l])=>`<option value="${v}"${b.svc===v?" selected":""}>${l}</option>`).join("")}</select></div>
+      <div class="field"><label for="b${i}-area">Sq ft</label><input id="b${i}-area" data-k="area" inputmode="numeric" value="${b.area}"></div>
+      <div class="field"><label for="b${i}-days">Days</label><input id="b${i}-days" data-k="days" inputmode="decimal" value="${b.days}"></div>
+      <div class="field"><label for="b${i}-km">Km/day</label><input id="b${i}-km" data-k="km" inputmode="numeric" value="${b.km}"></div>
+      <div class="field"><label for="b${i}-profit">Profit %</label><input id="b${i}-profit" data-k="profit" inputmode="decimal" value="${b.profit}"></div>
+      <div class="field"><label for="b${i}-extras">Extras $</label><input id="b${i}-extras" data-k="extras" inputmode="decimal" value="${b.extras}"></div>
+      <div class="field"><label for="b${i}-bid">What you bid $</label><input id="b${i}-bid" data-k="bid" inputmode="decimal" value="${b.bid}"></div>
+      <div class="field"><label for="b${i}-hst">Your bid includes HST?</label><select id="b${i}-hst" data-k="withHst"><option value="yes"${b.withHst==="yes"?" selected":""}>Yes</option><option value="no"${b.withHst==="no"?" selected":""}>No, before HST</option></select></div>
+    </div><div class="verdict" id="b${i}-v"></div><div class="row"><button class="btn danger" type="button" data-del="${i}">Remove</button></div>`;
+    el.querySelectorAll("[data-k]").forEach(inp=>inp.addEventListener(inp.tagName==="SELECT"?"change":"input",e=>{bids[i][e.target.dataset.k]=e.target.value;store.set("bids",bids);verdict(i)}));
+    el.querySelector("[data-del]").onclick=()=>{bids.splice(i,1);if(!bids.length)addBid(false);store.set("bids",bids);renderBids();addLog("Removed a past bid")};
+    box.appendChild(el);verdict(i)});
+}
+function verdict(i){
+  const b=bids[i],v=$(`b${i}-v`),j={svc:b.svc,area:n(b.area),days:n(b.days),km:n(b.km)??0,profit:parseFloat(b.profit),extras:n(b.extras)||0};
+  if(!j.area||!j.days||!isFinite(j.profit)){v.innerHTML='<span class="hint">Fill in sq ft, days and profit % to price it.</span>';return}
+  const c=price(j,rates),mine=b.withHst==="no"?c.pre:c.total,bid=n(b.bid);
+  let out=`<span>Spreadsheet: <b>${money(mine)}</b>${b.withHst==="no"?" before HST":" with HST"} · ${money(mine/j.area)}/sq ft</span>`;
+  if(bid){const d=bid-mine,pct=d/mine*100,cls=Math.abs(pct)<=2?"d-ok":Math.abs(pct)<=10?"d-warn":"d-stop";
+    out+=`<span>You bid: <b>${money(bid)}</b></span><span class="diff ${cls}">${d>=0?"+":""}${money(d)} (${pct>=0?"+":""}${pct.toFixed(1)}%)</span>`}
+  v.innerHTML=out}
+function addBid(render=true){bids.push({name:"",svc:"mpc",area:"",days:"",km:"",profit:"",extras:"",bid:"",withHst:"yes"});store.set("bids",bids);if(render)renderBids()}
+$("add-bid").onclick=()=>{addBid();addLog("Added a past bid")};
 
 /* ---------- wiring ---------- */
-function applySay(text){
-  const p=parse(text);job={client:"",area:null,edge:null,exposure:null,grout:null,...p};
-  const got=Object.keys(p).map(k=>k+"="+p[k]).join(", ")||"nothing it recognised";
-  addLog(`Heard: “${text.slice(0,90)}${text.length>90?"…":""}” → ${got}`);lastMsg="";render();
-}
+function applySay(t){const p=parse(t);job={svc:null,client:"",area:null,days:null,km:null,profit:null,extras:0,...p};
+  const got=Object.keys(p).map(k=>k+"="+p[k]).join(", ")||"nothing it recognised";addLog(`Heard: “${t.slice(0,90)}${t.length>90?"…":""}” → ${got}`);last="";render()}
 let tm;$("say").addEventListener("input",e=>{clearTimeout(tm);tm=setTimeout(()=>applySay(e.target.value),500)});
 EXAMPLES.forEach(x=>{const b=document.createElement("button");b.className="chip";b.type="button";b.textContent=x;b.onclick=()=>{$("say").value=x;applySay(x)};$("examples").appendChild(b)});
-$("f-client").addEventListener("change",e=>{job.client=e.target.value.trim();changed("Client set: "+job.client)});
-$("f-area").addEventListener("change",e=>{job.area=num(e.target.value)||null;changed("Area set: "+job.area)});
-$("f-edge").addEventListener("change",e=>{const v=e.target.value.trim();job.edge=v===""?null:num(v);changed("Edging set: "+job.edge)});
-$("approve").onclick=()=>{approval={hash:hashOf(state())};addLog(`Todd approved draft ${approval.hash}. Scope: draft only. Recipients: none. Nothing sent.`);render()};
+const num=(id,k,lbl)=>$(id).addEventListener("change",e=>{const v=e.target.value.trim();job[k]=v===""?(k==="extras"?0:null):n(v);changed(lbl+": "+(job[k]??"blank"))});
+num("f-area","area","Sq ft");num("f-days","days","Days");num("f-km","km","Km/day");num("f-extras","extras","Extras");
+$("f-profit").addEventListener("change",e=>{const v=parseFloat(e.target.value);job.profit=isFinite(v)?v:null;changed("Profit %: "+(job.profit??"blank"))});
+$("f-client").addEventListener("change",e=>{job.client=e.target.value.trim();changed("Client: "+job.client)});
+$("approve").onclick=()=>{approval=hashOf({job,rates});addLog(`Todd approved draft ${approval}. Scope: draft only. Recipients: none. Nothing sent.`);render()};
 $("reject").onclick=()=>{approval=null;addLog("Todd rejected this draft. Nothing sent.");render()};
-$("copy").onclick=()=>{const t=$("quote").textContent;const done=()=>{$("copy-msg").textContent="Copied. Paste it into your own email or text when you're ready. The desk didn't send anything.";addLog("Quote text copied by Todd. Not sent by the desk.")};
-  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,()=>{selectQuote();$("copy-msg").textContent="Copy was blocked here. The quote is selected: long-press and choose Copy."})}else{selectQuote()}};
 function selectQuote(){const r=document.createRange();r.selectNodeContents($("quote"));const s=getSelection();s.removeAllRanges();s.addRange(r)}
-$("reset-rates").onclick=()=>{mine={};store.set("mine",mine);store.set("rates",null);loadRates();renderRates();changed("Rates reset to samples")};
+$("copy").onclick=()=>{const t=$("quote").textContent,done=()=>{$("copy-msg").textContent="Copied. Paste it into your own email or text when you're ready. The desk didn't send anything.";addLog("Quote text copied by Todd. Not sent by the desk.")};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,()=>{selectQuote();$("copy-msg").textContent="Copy was blocked. The quote is selected: long-press and choose Copy."});else selectQuote()};
+$("print").onclick=()=>{addLog("Printed the quote.");window.print()};
+$("reset-rates").onclick=()=>{changedRates={};store.set("changed",{});store.set("rates",null);loadRates();renderRates();changed("Rates put back to the spreadsheet")};
 
-/* ---------- light / dark switch ---------- */
-const root=document.documentElement, tb=$("theme");
-function isDark(){const t=root.getAttribute("data-theme");return t?t==="dark":matchMedia("(prefers-color-scheme: dark)").matches}
-function setTheme(t){root.setAttribute("data-theme",t);store.set("theme",t);paintTheme()}
-function paintTheme(){tb.textContent=isDark()?"☀ Light":"◐ Dark"}
-const savedTheme=store.get("theme");if(savedTheme)root.setAttribute("data-theme",savedTheme);
-paintTheme();tb.onclick=()=>setTheme(isDark()?"light":"dark");
-try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",paintTheme)}catch(e){}
+const root=document.documentElement,tb=$("theme");
+const isDark=()=>{const t=root.getAttribute("data-theme");return t?t==="dark":matchMedia("(prefers-color-scheme: dark)").matches};
+const paint=()=>tb.textContent=isDark()?"☀ Light":"◐ Dark";
+const st=store.get("theme");if(st)root.setAttribute("data-theme",st);paint();
+tb.onclick=()=>{const t=isDark()?"light":"dark";root.setAttribute("data-theme",t);store.set("theme",t);paint()};
+try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",paint)}catch(e){}
 
 renderRates();
 const saved=store.get("job");
-if(saved&&saved.area){job=saved;addLog("Restored the last job on this phone.");render()}
+if(saved&&saved.area){job=saved;addLog("Restored the last job on this device.");render()}
 else{$("say").value=EXAMPLES[0];applySay(EXAMPLES[0])}
 })();
 </script>
 
-</html>
+</body></html>
