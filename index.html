@@ -4,23 +4,23 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="description" content="Demo: say a job, get a traceable draft quote. Sample rates, nothing sent.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Questrial&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 :root{
-  --ground:#E9ECEB; --surface:#F7F8F7; --sunk:#DDE2E0; --ink:#1B2225; --muted:#56636A; --line:#C6CDCB;
-  --accent:#1E5E58; --accent-ink:#FFFFFF; --accent-soft:#D3E5E2;
+  --ground:#ECEDEF; --surface:#FFFFFF; --sunk:#E1E3E6; --ink:#16181B; --muted:#585E66; --line:#CDD1D6;
+  --accent:#1D67CD; --accent-ink:#FFFFFF; --accent-soft:#DCE8F8; --bar:#000000; --bar-ink:#FFFFFF; --silver:#B9BEC4;
   --warn:#8A5A00; --warn-soft:#F5E7C6; --stop:#9B2C22; --stop-soft:#F6DCD7; --ok:#2B6A35; --ok-soft:#D9EDDB;
-  --display:"Archivo","Arial Narrow",Arial,sans-serif; --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --display:"Questrial","ITC Avant Garde Gothic",Arial,sans-serif; --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  color-scheme:dark; --ground:#151A1C; --surface:#1E2528; --sunk:#283135; --ink:#E6EBEA; --muted:#9AA8AD; --line:#36423F;
-  --accent:#5FB3A9; --accent-ink:#0E1B1A; --accent-soft:#1E3A37;
+  color-scheme:dark; --ground:#141619; --surface:#1D2024; --sunk:#272B30; --ink:#E9EBEE; --muted:#9BA2AB; --line:#353A41;
+  --accent:#5C9BEC; --accent-ink:#0B1626; --accent-soft:#1A2B44; --bar:#000000; --bar-ink:#FFFFFF; --silver:#B9BEC4;
   --warn:#E5B550; --warn-soft:#3A2F15; --stop:#F08A7E; --stop-soft:#3D2120; --ok:#7CC98A; --ok-soft:#1D3522;
 }}
 :root[data-theme="dark"]{
-  color-scheme:dark; --ground:#151A1C; --surface:#1E2528; --sunk:#283135; --ink:#E6EBEA; --muted:#9AA8AD; --line:#36423F;
-  --accent:#5FB3A9; --accent-ink:#0E1B1A; --accent-soft:#1E3A37;
+  color-scheme:dark; --ground:#141619; --surface:#1D2024; --sunk:#272B30; --ink:#E9EBEE; --muted:#9BA2AB; --line:#353A41;
+  --accent:#5C9BEC; --accent-ink:#0B1626; --accent-soft:#1A2B44; --bar:#000000; --bar-ink:#FFFFFF; --silver:#B9BEC4;
   --warn:#E5B550; --warn-soft:#3A2F15; --stop:#F08A7E; --stop-soft:#3D2120; --ok:#7CC98A; --ok-soft:#1D3522;
 }
 *{box-sizing:border-box}
@@ -29,9 +29,18 @@ body{background:var(--ground);color:var(--ink);font:15px/1.5 var(--body);padding
 .wrap{max-width:1120px;margin:0 auto;display:grid;gap:20px}
 header{display:grid;gap:6px}
 .eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-h1{font:800 clamp(28px,6vw,42px)/1.05 var(--display);letter-spacing:-.01em;margin:0;text-wrap:balance}
-h2{font:700 17px/1.2 var(--display);margin:0;letter-spacing:.01em}
+h1{font:400 clamp(30px,6vw,44px)/1.05 var(--display);letter-spacing:.01em;margin:0;text-wrap:balance}
+h2{font:400 19px/1.2 var(--display);margin:0;letter-spacing:.02em}
 h3{font:600 13px/1.2 var(--body);margin:0;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.brandbar{background:var(--bar);color:var(--bar-ink);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.mark{width:44px;height:44px;flex:none;border:4px solid var(--silver);border-radius:9px;position:relative;overflow:hidden;background:#2a2d31}
+.mark::before{content:"";position:absolute;left:9px;top:5px;width:6px;height:26px;background:var(--silver)}
+.mark::after{content:"";position:absolute;left:12px;top:5px;width:6px;height:28px;background:#1D67CD;transform:skewX(26deg);transform-origin:top left;box-shadow:12px 0 0 0 #1D67CD}
+.wordmark{display:grid;line-height:1}
+.wordmark b{font:400 22px/1 var(--display);letter-spacing:.04em;color:#D9DCE0}
+.wordmark small{font:400 10.5px/1.3 var(--display);letter-spacing:.16em;color:var(--silver);margin-top:3px}
+.brandbar .eyebrow{color:#9FA6AE;margin-left:auto}
+h1{font-weight:400}
 p{margin:0}
 .lede{color:var(--muted);max-width:62ch}
 .banner{display:flex;gap:10px;align-items:flex-start;background:var(--warn-soft);color:var(--ink);border:1px solid color-mix(in srgb,var(--warn) 35%,transparent);border-radius:8px;padding:10px 12px;font-size:14px}
@@ -72,7 +81,7 @@ td,th{padding:7px 0;border-bottom:1px solid var(--line);vertical-align:top;text-
 td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:12px}
 td .how{display:block;font:400 12px/1.4 var(--mono);color:var(--muted)}
 tr.sub td{font-weight:600}
-tr.total td{font:700 18px/1.2 var(--display);border-bottom:none;padding-top:12px}
+tr.total td{font:600 18px/1.2 var(--body);border-bottom:none;padding-top:12px}
 tr.total td.n{font-family:var(--mono)}
 .compare{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
 .compare div{background:var(--ground);border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;gap:2px}
@@ -84,7 +93,7 @@ tr.total td.n{font-family:var(--mono)}
 .flag small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
 .quote{background:var(--ground);border:1px dashed var(--line);border-radius:8px;padding:14px;font:13px/1.55 var(--mono);white-space:pre-wrap;overflow-x:auto;max-height:420px;overflow-y:auto}
 details{border-top:1px solid var(--line);padding-top:12px}
-summary{cursor:pointer;font:700 15px/1.2 var(--display)}
+summary{cursor:pointer;font:400 16px/1.2 var(--display);letter-spacing:.02em}
 .rates{display:grid;gap:10px;margin-top:12px}
 .rate{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:8px;align-items:center}
 .rate .lbl{font-size:14px}
@@ -100,7 +109,11 @@ footer{color:var(--muted);font-size:13px;max-width:70ch}
 
 <div class="wrap">
   <header>
-    <span class="eyebrow">Northern Concrete · Phase 1 demo · v0.1</span>
+    <div class="brandbar" role="banner">
+      <span class="mark" aria-hidden="true"></span>
+      <span class="wordmark"><b>NORTHERN CONCRETE</b><small>REFINEMENT &amp; POLISHING CO.</small></span>
+      <span class="eyebrow">Phase 1 demo · v0.2</span>
+    </div>
     <h1>Quote Desk</h1>
     <p class="lede">Say the job the way you'd say it to Sophia. The desk pulls out the numbers, stops and asks when something's missing, shows every line of the math, and waits for your OK. Nothing leaves this page.</p>
     <div class="banner" role="note"><span>⚠</span><span><b>Sample rates, not Northern's.</b> Every dollar figure below is made up until your Works Plus workbook replaces it. You can type your own rates under “Rates” to try it.</span></div>
