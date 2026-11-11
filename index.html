@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Northern Quote Desk</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="Demo: say a job, get a traceable draft quote. Sample rates, nothing sent.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#E9ECEB; --surface:#F7F8F7; --sunk:#DDE2E0; --ink:#1B2225; --muted:#56636A; --line:#C6CDCB;
+  --accent:#1E5E58; --accent-ink:#FFFFFF; --accent-soft:#D3E5E2;
+  --warn:#8A5A00; --warn-soft:#F5E7C6; --stop:#9B2C22; --stop-soft:#F6DCD7; --ok:#2B6A35; --ok-soft:#D9EDDB;
+  --display:"Archivo","Arial Narrow",Arial,sans-serif; --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  color-scheme:dark; --ground:#151A1C; --surface:#1E2528; --sunk:#283135; --ink:#E6EBEA; --muted:#9AA8AD; --line:#36423F;
+  --accent:#5FB3A9; --accent-ink:#0E1B1A; --accent-soft:#1E3A37;
+  --warn:#E5B550; --warn-soft:#3A2F15; --stop:#F08A7E; --stop-soft:#3D2120; --ok:#7CC98A; --ok-soft:#1D3522;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark; --ground:#151A1C; --surface:#1E2528; --sunk:#283135; --ink:#E6EBEA; --muted:#9AA8AD; --line:#36423F;
+  --accent:#5FB3A9; --accent-ink:#0E1B1A; --accent-soft:#1E3A37;
+  --warn:#E5B550; --warn-soft:#3A2F15; --stop:#F08A7E; --stop-soft:#3D2120; --ok:#7CC98A; --ok-soft:#1D3522;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--ground);color:var(--ink);font:15px/1.5 var(--body);padding-inline:16px;padding-block:20px 48px}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:20px}
+header{display:grid;gap:6px}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:800 clamp(28px,6vw,42px)/1.05 var(--display);letter-spacing:-.01em;margin:0;text-wrap:balance}
+h2{font:700 17px/1.2 var(--display);margin:0;letter-spacing:.01em}
+h3{font:600 13px/1.2 var(--body);margin:0;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+p{margin:0}
+.lede{color:var(--muted);max-width:62ch}
+.banner{display:flex;gap:10px;align-items:flex-start;background:var(--warn-soft);color:var(--ink);border:1px solid color-mix(in srgb,var(--warn) 35%,transparent);border-radius:8px;padding:10px 12px;font-size:14px}
+.banner b{color:var(--warn)}
+.cols{display:grid;gap:20px;grid-template-columns:1fr}
+@media (min-width:900px){.cols{grid-template-columns:minmax(0,5fr) minmax(0,6fr);align-items:start}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:14px}
+.stack{display:grid;gap:14px}
+label{font-weight:500;font-size:14px}
+textarea,input,select{font:inherit;color:var(--ink);background:var(--ground);border:1px solid var(--line);border-radius:6px;padding:9px 10px;width:100%}
+textarea{min-height:88px;resize:vertical;font-size:16px}
+textarea:focus,input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.hint{font-size:13px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:500 13px/1.2 var(--body);background:var(--sunk);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer;text-align:left}
+.chip:hover{border-color:var(--accent)}
+.fields{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.fields .full{grid-column:1/-1}
+.field{display:grid;gap:4px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{flex:1 1 auto;font:500 14px/1 var(--body);padding:9px 10px;border-radius:6px;border:1px solid var(--line);background:var(--ground);color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn{font:600 14px/1 var(--body);padding:11px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.danger{border-color:var(--stop);color:var(--stop);background:transparent}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.status{display:inline-flex;align-items:center;gap:6px;font:500 12px/1 var(--mono);letter-spacing:.05em;padding:6px 9px;border-radius:4px;text-transform:uppercase}
+.st-stop{background:var(--stop-soft);color:var(--stop)} .st-draft{background:var(--accent-soft);color:var(--accent)} .st-ok{background:var(--ok-soft);color:var(--ok)}
+.ask{border:1px solid color-mix(in srgb,var(--stop) 40%,transparent);background:var(--stop-soft);border-radius:8px;padding:12px;display:grid;gap:6px}
+.ask ul{margin:0;padding-left:18px}
+.grits{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font:500 12px/1 var(--mono)}
+.grits span{padding:5px 7px;border-radius:3px;background:var(--sunk)}
+.grits span.metal{background:var(--ink);color:var(--surface)}
+.grits i{color:var(--muted);font-style:normal}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:7px 0;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:12px}
+td .how{display:block;font:400 12px/1.4 var(--mono);color:var(--muted)}
+tr.sub td{font-weight:600}
+tr.total td{font:700 18px/1.2 var(--display);border-bottom:none;padding-top:12px}
+tr.total td.n{font-family:var(--mono)}
+.compare{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.compare div{background:var(--ground);border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;gap:2px}
+.compare div.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.compare b{font:600 18px/1.2 var(--mono);font-variant-numeric:tabular-nums}
+.compare small{color:var(--muted);font-size:12px}
+.flags{display:grid;gap:8px}
+.flag{border-left:3px solid var(--warn);background:var(--warn-soft);padding:8px 10px;border-radius:0 6px 6px 0;font-size:14px}
+.flag small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.quote{background:var(--ground);border:1px dashed var(--line);border-radius:8px;padding:14px;font:13px/1.55 var(--mono);white-space:pre-wrap;overflow-x:auto;max-height:420px;overflow-y:auto}
+details{border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font:700 15px/1.2 var(--display)}
+.rates{display:grid;gap:10px;margin-top:12px}
+.rate{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:8px;align-items:center}
+.rate .lbl{font-size:14px}
+.rate .lbl small{display:block;font-size:12px;color:var(--muted)}
+.tag{font:500 10px/1 var(--mono);letter-spacing:.06em;padding:3px 5px;border-radius:3px;margin-left:6px;vertical-align:1px;text-transform:uppercase}
+.tag.sample{background:var(--warn-soft);color:var(--warn)} .tag.yours{background:var(--ok-soft);color:var(--ok)} .tag.todd{background:var(--accent-soft);color:var(--accent)} .tag.law{background:var(--sunk);color:var(--muted)}
+.log{font:12px/1.5 var(--mono);color:var(--muted);display:grid;gap:4px;max-height:180px;overflow-y:auto}
+.log div b{color:var(--ink);font-weight:500}
+footer{color:var(--muted);font-size:13px;max-width:70ch}
+@media (max-width:420px){.fields{grid-template-columns:1fr}.rate{grid-template-columns:minmax(0,1fr) 96px}}
+@media (prefers-reduced-motion:no-preference){.panel{transition:border-color .2s}}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Northern Concrete · Phase 1 demo · v0.1</span>
+    <h1>Quote Desk</h1>
+    <p class="lede">Say the job the way you'd say it to Sophia. The desk pulls out the numbers, stops and asks when something's missing, shows every line of the math, and waits for your OK. Nothing leaves this page.</p>
+    <div class="banner" role="note"><span>⚠</span><span><b>Sample rates, not Northern's.</b> Every dollar figure below is made up until your Works Plus workbook replaces it. You can type your own rates under “Rates” to try it.</span></div>
+  </header>
+
+  <div class="cols">
+    <section class="panel" aria-labelledby="h-job">
+      <h2 id="h-job">1 · The job</h2>
+      <div class="field">
+        <label for="say">Say or type it</label>
+        <textarea id="say" placeholder="e.g. Prepare John Doe's 10,000 square foot random exposure quote with 400 feet of edging"></textarea>
+        <span class="hint">On your Android phone, tap the 🎤 on your keyboard and just talk.</span>
+      </div>
+      <div class="stack">
+        <h3>Try one</h3>
+        <div class="chips" id="examples"></div>
+      </div>
+      <div class="stack">
+        <h3>What the desk heard (fix anything)</h3>
+        <div class="fields">
+          <div class="field full"><label for="f-client">Client</label><input id="f-client" autocomplete="off"></div>
+          <div class="field"><label for="f-area">Floor area (sq ft)</label><input id="f-area" inputmode="numeric" autocomplete="off"></div>
+          <div class="field"><label for="f-edge">Edging (linear ft)</label><input id="f-edge" inputmode="numeric" autocomplete="off" placeholder="0 if none"></div>
+          <div class="field full"><label>Exposure</label><div class="seg" id="f-exp"></div></div>
+          <div class="field full"><label>Power grouting (PGT)</label><div class="seg" id="f-grout"></div></div>
+        </div>
+      </div>
+      <div class="stack">
+        <h3>Grit sequence for this exposure</h3>
+        <div class="grits" id="grits"></div>
+        <span class="hint">From your brief. <span class="tag todd">Todd's explanation</span> pending your check: the desk will ask you why before it's used with customers.</span>
+      </div>
+      <details id="rates-box">
+        <summary>Rates</summary>
+        <p class="hint" style="margin-top:8px">Saved on this phone only. <span class="tag sample">sample</span> = made up · <span class="tag todd">Todd</span> = your rough figure from the brief · <span class="tag yours">yours</span> = you typed it.</p>
+        <div class="rates" id="rates"></div>
+        <div class="row" style="margin-top:10px"><button class="btn ghost" id="reset-rates" type="button">Reset to sample rates</button></div>
+      </details>
+    </section>
+
+    <section class="panel" aria-labelledby="h-draft" aria-live="polite">
+      <div class="row" style="justify-content:space-between"><h2 id="h-draft">2 · The draft</h2><span id="status"></span></div>
+      <div id="ask" class="ask" hidden></div>
+      <div id="result" class="stack">
+        <table aria-label="Price breakdown"><tbody id="lines"></tbody></table>
+        <div class="stack">
+          <h3>Markup or margin? Same cost, different price</h3>
+          <div class="compare" id="compare"></div>
+          <div class="field"><label>Price this quote using</label><div class="seg" id="f-mode"></div></div>
+        </div>
+        <div class="stack" id="flags-wrap"><h3>Flags for you</h3><div class="flags" id="flags"></div></div>
+        <div class="stack">
+          <h3>Draft quote</h3>
+          <div class="quote" id="quote" tabindex="0"></div>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn" id="approve" type="button">Approve as draft</button>
+        <button class="btn danger" id="reject" type="button">Reject</button>
+        <button class="btn ghost" id="copy" type="button">Copy quote text</button>
+      </div>
+      <p class="hint" id="copy-msg">Approving here records your OK on this draft only. It sends nothing, to no one. To send, you copy it and send it yourself.</p>
+      <div class="stack"><h3>Audit log</h3><div class="log" id="log"></div></div>
+    </section>
+  </div>
+
+  <footer>Built by Troy for Northern Concrete. Runs entirely in this page: no account, no AI service, no internet connection to anything after it loads. The same answer comes out every time for the same inputs. HST is Ontario's 13%. Next step: swap these sample rates for the formulas in your Works Plus workbook, then test it against three of your past jobs.</footer>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const EXPOSURES=[["cream","Cream"],["minimal","Minimal / S&P"],["random","Random"],["full","Full"]];
+const GRITS={
+  cream:[["hybrid?","h"],"200","400","800","1500"],
+  minimal:[["hybrid","h"],"100","200","400","800","1500"],
+  random:[["30 metal","m"],"PGT1","100","200","400","800","1500"],
+  full:[["30 metal","m"],"PGT2","100","200","400","800","1500","3000"]
+};
+const RATE_DEFS=[
+  ["sfPerDay","Sq ft per grinder-day","Your rough figure, not a promise",1000,"todd",1],
+  ["grinders","Grinders on the job","",2,"sample",1],
+  ["dayRate","Loaded cost per worker-day ($)","Wage + burden",320,"sample",1],
+  ["slowRandom","Extra time, random (×)","vs cream/minimal",1.25,"sample",0.05],
+  ["slowFull","Extra time, full (×)","vs cream/minimal",1.5,"sample",0.05],
+  ["toolCream","Tooling $/sq ft, cream","",0.02,"sample",0.01],
+  ["toolMinimal","Tooling $/sq ft, minimal","",0.03,"sample",0.01],
+  ["toolRandom","Tooling $/sq ft, random","",0.05,"sample",0.01],
+  ["toolFull","Tooling $/sq ft, full","",0.06,"sample",0.01],
+  ["chem","Densifier + guard $/sq ft","",0.18,"sample",0.01],
+  ["grout","Power grout $/sq ft","Material",0.12,"sample",0.01],
+  ["groutTime","Grout extra time (×)","",1.15,"sample",0.05],
+  ["edge","Edging $/linear ft","Labour + tooling",3.5,"sample",0.25],
+  ["mob","Mobilization per job ($)","Truck, load-in, travel",350,"sample",25],
+  ["overhead","Overhead (% of direct cost)","Check: not double-counted",12,"sample",1],
+  ["target","Target (%)","Markup or gross margin, see below",35,"sample",1],
+  ["hst","HST (%)","Ontario",13,"law",1]
+];
+const EXAMPLES=[
+  "Prepare John Doe's 10,000 square foot random exposure quote with 400 feet of edging and power grout",
+  "Prepare John Doe's 10,000 square foot random exposure quote with 400 feet of edging",
+  "Quote for Sarah Lee, 2,400 sq ft basement, minimal exposure, no grout, 180 feet of edging",
+  "Full exposure for Mike's shop, 6500 square feet, power grout, 320 linear feet edging"
+];
+const store={get(k){try{return JSON.parse(localStorage.getItem("nqd."+k))}catch(e){return null}},set(k,v){try{localStorage.setItem("nqd."+k,JSON.stringify(v))}catch(e){}}};
+
+let rates={}, mine=store.get("mine")||{};
+function loadRates(){RATE_DEFS.forEach(([k,,,d])=>rates[k]=d);const saved=store.get("rates")||{};Object.keys(saved).forEach(k=>{if(k in rates)rates[k]=saved[k]})}
+loadRates();
+let job={client:"",area:null,edge:null,exposure:null,grout:null};
+let mode=store.get("mode")||"margin";
+let approval=null; // {hash, at}
+const log=[];
+
+/* ---------- parsing (plain rules, no AI) ---------- */
+const WORDNUM={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,twelve:12,fifteen:15,twenty:20,thirty:30,forty:40,fifty:50};
+function num(s){
+  if(!s)return null; s=s.toLowerCase().replace(/,/g,"").trim();
+  let m=s.match(/^(\d+(?:\.\d+)?|[a-z]+)\s*(k|thousand|hundred)?$/);
+  if(!m)return null;
+  let n=/^\d/.test(m[1])?parseFloat(m[1]):WORDNUM[m[1]]; if(n==null)return null;
+  if(m[2]==="k"||m[2]==="thousand")n*=1000; if(m[2]==="hundred")n*=100;
+  return Math.round(n);
+}
+const N="(\\d[\\d,]*(?:\\.\\d+)?\\s*(?:k|thousand|hundred)?|[a-z]+\\s+(?:thousand|hundred))";
+function parse(t){
+  const out={}; const s=" "+t.replace(/[’']/g,"'")+" ";
+  let m=s.match(new RegExp(N+"\\s*(?:-|\\s)?(?:sq\\.?\\s*(?:ft|feet|foot)|square[-\\s]?(?:foot|feet|ft)|sf\\b|sqft)","i"));
+  if(m)out.area=num(m[1]);
+  if(/\bno\s+edg/i.test(s))out.edge=0;
+  else{
+    m=s.match(new RegExp(N+"\\s*(?:linear\\s*|lin\\.?\\s*)?(?:feet|foot|ft|lf)\\b\\s*(?:of\\s+)?edg","i"))
+     ||s.match(new RegExp("edg\\w*\\s*(?:of|:)?\\s*"+N+"\\s*(?:linear\\s*)?(?:feet|foot|ft|lf)?","i"));
+    if(m)out.edge=num(m[1]);
+  }
+  if(/\bcream\b/i.test(s))out.exposure="cream";
+  else if(/\b(minimal|salt[\s-]*(and|&|n)[\s-]*pepper|s&p)\b/i.test(s))out.exposure="minimal";
+  else if(/\brandom\b/i.test(s))out.exposure="random";
+  else if(/\bfull\b/i.test(s))out.exposure="full";
+  if(/\b(no|without|skip)\s+(power\s+)?(grout|pgt)/i.test(s))out.grout=false;
+  else if(/\b(grout|pgt)/i.test(s))out.grout=true;
+  m=s.match(/\b(?:[Pp]repare|[Qq]uote\s+for|for)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)(?:'s)?/);
+  if(m&&!/^(Random|Full|Minimal|Cream|The|A)$/.test(m[1]))out.client=m[1]+(/'s\s+shop/i.test(s)?"'s shop":"");
+  return out;
+}
+
+/* ---------- math (deterministic) ---------- */
+const money=n=>"$"+n.toLocaleString("en-CA",{minimumFractionDigits:2,maximumFractionDigits:2});
+const r2=n=>Math.round(n*100)/100;
+function compute(){
+  const R=rates, j=job, tool={cream:R.toolCream,minimal:R.toolMinimal,random:R.toolRandom,full:R.toolFull}[j.exposure];
+  const slow={cream:1,minimal:1,random:R.slowRandom,full:R.slowFull}[j.exposure];
+  const gf=j.grout?R.groutTime:1;
+  const rawDays=j.area*slow*gf/(R.sfPerDay*R.grinders);
+  const days=Math.max(0.5,Math.ceil(rawDays*2)/2);
+  const L=[];
+  const labour=r2(days*R.grinders*R.dayRate);
+  L.push(["Labour",labour,`${days} days × ${R.grinders} workers × ${money(R.dayRate)}  (${fmt(j.area)} sf × ${slow}${j.grout?" × "+R.groutTime+" grout":""} ÷ ${fmt(R.sfPerDay*R.grinders)} sf/day, rounded up to ½ day)`]);
+  const tl=r2(j.area*tool); L.push(["Tooling",tl,`${fmt(j.area)} sf × ${money(tool)}/sf`]);
+  const ch=r2(j.area*R.chem); L.push(["Densifier + guard",ch,`${fmt(j.area)} sf × ${money(R.chem)}/sf`]);
+  if(j.grout){const g=r2(j.area*R.grout);L.push(["Power grout material",g,`${fmt(j.area)} sf × ${money(R.grout)}/sf`])}
+  if(j.edge>0){const e=r2(j.edge*R.edge);L.push(["Edging",e,`${fmt(j.edge)} lf × ${money(R.edge)}/lf`])}
+  L.push(["Mobilization",r2(R.mob),"flat per job"]);
+  const direct=r2(L.reduce((a,l)=>a+l[1],0));
+  const oh=r2(direct*R.overhead/100);
+  const cost=r2(direct+oh);
+  const t=R.target/100;
+  const pMarkup=r2(cost*(1+t)), pMargin=t<1?r2(cost/(1-t)):NaN;
+  const price=mode==="margin"?pMargin:pMarkup;
+  const hst=r2(price*R.hst/100);
+  return {L,direct,oh,cost,pMarkup,pMargin,price,hst,total:r2(price+hst),days,t};
+}
+const fmt=n=>Number(n).toLocaleString("en-CA");
+function hashOf(o){const s=JSON.stringify(o);let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;return h.toString(16).padStart(8,"0")}
+
+/* ---------- render ---------- */
+function seg(el,opts,cur,on){
+  el.innerHTML="";opts.forEach(([v,l])=>{const b=document.createElement("button");b.type="button";b.textContent=l;b.setAttribute("aria-pressed",String(cur===v));b.onclick=()=>on(v);el.appendChild(b)});
+}
+function renderFields(){
+  $("f-client").value=job.client||"";$("f-area").value=job.area??"";$("f-edge").value=job.edge??"";
+  seg($("f-exp"),EXPOSURES,job.exposure,v=>{job.exposure=v;changed("Exposure set to "+v)});
+  seg($("f-grout"),[[true,"Yes, include"],[false,"No grout"]],job.grout,v=>{job.grout=v;changed("Grouting: "+(v?"included":"not included"))});
+  seg($("f-mode"),[["margin","Gross margin"],["markup","Markup"]],mode,v=>{mode=v;store.set("mode",v);changed("Pricing method: "+v)});
+  const g=$("grits");g.innerHTML="";
+  if(!job.exposure){g.innerHTML='<i>Pick an exposure</i>';}
+  else GRITS[job.exposure].forEach((x,i)=>{if(i)g.insertAdjacentHTML("beforeend","<i>→</i>");const sp=document.createElement("span");if(Array.isArray(x)){sp.textContent=x[0];if(x[1]==="m")sp.className="metal"}else sp.textContent=x;g.appendChild(sp)});
+}
+function renderRates(){
+  const box=$("rates");box.innerHTML="";
+  RATE_DEFS.forEach(([k,l,sub,d,src,step])=>{
+    const row=document.createElement("div");row.className="rate";
+    const tag=mine[k]?'<span class="tag yours">yours</span>':`<span class="tag ${src}">${src==="law"?"Ontario":src}</span>`;
+    row.innerHTML=`<label class="lbl" for="r-${k}">${l}${tag}${sub?`<small>${sub}</small>`:""}</label><input id="r-${k}" type="number" step="${step}" inputmode="decimal" value="${rates[k]}">`;
+    row.querySelector("input").addEventListener("change",e=>{const v=parseFloat(e.target.value);if(!isFinite(v)||v<0){e.target.value=rates[k];return}rates[k]=v;mine[k]=v!==d;store.set("rates",rates);store.set("mine",mine);renderRates();changed(`Rate changed: ${l} = ${v}`)});
+    box.appendChild(row);
+  });
+}
+function missing(){
+  const q=[];
+  if(!job.area)q.push("How many square feet is the floor?");
+  if(!job.exposure)q.push("Which exposure: cream, minimal, random or full?");
+  if(job.edge==null||job.edge==="")q.push("How many linear feet of edging? Say 0 if none.");
+  if(job.grout==null)q.push("Include power grouting (PGT)? Yes or no.");
+  if(rates.target>=100&&mode==="margin")q.push("A gross margin of 100% or more is impossible. Lower the target.");
+  return q;
+}
+function flags(c){
+  const f=[];
+  if(job.grout===false)f.push(["No grout step in scope.","Pinholes, voids and small surface defects may stay visible. Add a line to the quote saying so, or offer grouting as an option.","From your brief, section 5.4"]);
+  if(job.exposure==="minimal"||job.exposure==="cream")f.push(["Hybrid / light start.","A hybrid start removes less material than 30-grit metal, so it may not correct original placing or finishing defects. Does the client know that?","Your explanation, pending your check"]);
+  if(job.exposure==="full"||job.exposure==="random")f.push(["Heavier cut.","Aggregate can show unevenly where slab cover varies. Confirm the client accepts natural variation.","From your brief, section 5.4"]);
+  if(mode==="markup")f.push(["Priced on markup.",`A ${rates.target}% markup is only a ${(c.t/(1+c.t)*100).toFixed(1)}% gross margin. Make sure that's what you mean.`,"Brief, section 5.2"]);
+  if(rates.overhead>0)f.push(["Overhead at "+rates.overhead+"%.","Check it isn't counted twice: once here and again inside the day rate or the workbook.","Brief, section 5.2"]);
+  if(Object.keys(mine).filter(k=>mine[k]).length<RATE_DEFS.length-2)f.push(["Sample rates in use.","This price is a demonstration. Don't send it to a customer until your Works Plus numbers replace the samples.","Demo rule"]);
+  return f;
+}
+function quoteText(c,h){
+  const d=new Date();const no="DRAFT-"+d.toISOString().slice(0,10).replace(/-/g,"")+"-"+h.slice(0,4).toUpperCase();
+  const exp=EXPOSURES.find(e=>e[0]===job.exposure)[1];
+  const L=[];
+  L.push("NORTHERN CONCRETE REFINEMENT & POLISHING CO.");
+  L.push("*** DRAFT — NOT SENT — SAMPLE RATES ***");
+  L.push("");
+  L.push("Quote no.:  "+no);
+  L.push("Prepared:   "+d.toLocaleDateString("en-CA",{year:"numeric",month:"long",day:"numeric"}));
+  L.push("Client:     "+(job.client||"(client name needed)"));
+  L.push("");
+  L.push("SCOPE");
+  L.push(`- Mechanically polished concrete, ${exp.toLowerCase()} exposure: ${fmt(job.area)} sq ft`);
+  L.push("- Grit sequence: "+GRITS[job.exposure].map(x=>Array.isArray(x)?x[0]:x).join(" > "));
+  L.push(job.grout?"- Power grouting and densification":"- Densification (no grouting)");
+  if(job.edge>0)L.push(`- Edging: ${fmt(job.edge)} linear ft`);
+  L.push("- Penetrating protective guard");
+  L.push(`- Estimated production: ${c.days} working days`);
+  L.push("");
+  L.push("PRICE");
+  L.push(("Price before HST").padEnd(24)+money(c.price).padStart(14));
+  L.push(("HST "+rates.hst+"%").padEnd(24)+money(c.hst).padStart(14));
+  L.push(("Total").padEnd(24)+money(c.total).padStart(14));
+  L.push(("Per sq ft before HST").padEnd(24)+money(c.price/job.area).padStart(14));
+  L.push("");
+  L.push("WHAT TO EXPECT");
+  if(!job.grout)L.push("- Grouting is not included. Pinholes, voids and minor surface");
+  if(!job.grout)L.push("  defects may remain visible.");
+  if(job.exposure==="minimal"||job.exposure==="cream"){L.push("- This exposure removes little surface material. Existing");L.push("  finishing marks or defects may remain visible.");}
+  if(job.exposure==="random"||job.exposure==="full"){L.push("- Aggregate exposure varies with the slab. Natural variation");L.push("  in stone size and spread is expected.");}
+  L.push("- Existing cracks, cold joints and patches may stay visible.");
+  L.push("- Gloss is described by appearance; no measured gloss");
+  L.push("  reading is promised unless stated.");
+  L.push("");
+  L.push("EXCLUSIONS (to be confirmed by Todd)");
+  L.push("- Crack and joint filling, repairs, coating removal,");
+  L.push("  moving furniture or equipment, unless listed above.");
+  L.push("");
+  L.push("Valid 30 days. Prices in CAD.");
+  L.push("");
+  L.push("--- traceability ---");
+  L.push("Inputs+rates fingerprint: "+h+"   Pricing: "+(mode==="margin"?"gross margin "+rates.target+"%":"markup "+rates.target+"%"));
+  L.push("Rates: SAMPLE (demo v0.1), not the Works Plus workbook.");
+  return L.join("\n");
+}
+function state(){return {job,rates,mode}}
+function render(){
+  renderFields();
+  const q=missing(), st=$("status"), ask=$("ask"), res=$("result");
+  const ap=$("approve"), rj=$("reject"), cp=$("copy");
+  if(q.length){
+    st.className="status st-stop";st.textContent="Needs your answer";
+    ask.hidden=false;ask.innerHTML="<b>The desk won't guess. It needs:</b><ul>"+q.map(x=>"<li>"+x+"</li>").join("")+"</ul>";
+    res.hidden=true;ap.disabled=rj.disabled=cp.disabled=true;return;
+  }
+  ask.hidden=true;res.hidden=false;ap.disabled=rj.disabled=cp.disabled=false;
+  const c=compute(), h=hashOf(state());
+  if(approval&&approval.hash!==h){approval=null;addLog("Inputs changed after approval. Approval cleared; needs a new OK.")}
+  if(approval){st.className="status st-ok";st.textContent="Approved: draft only";ap.disabled=true}
+  else{st.className="status st-draft";st.textContent="Draft ready · waiting on you"}
+  const rows=c.L.map(([n,v,how])=>`<tr><td>${n}<span class="how">${how}</span></td><td class="n">${money(v)}</td></tr>`);
+  rows.push(`<tr class="sub"><td>Direct cost</td><td class="n">${money(c.direct)}</td></tr>`);
+  rows.push(`<tr><td>Overhead<span class="how">${money(c.direct)} × ${rates.overhead}%</span></td><td class="n">${money(c.oh)}</td></tr>`);
+  rows.push(`<tr class="sub"><td>Total cost</td><td class="n">${money(c.cost)}</td></tr>`);
+  rows.push(`<tr><td>Price before HST<span class="how">${mode==="margin"?`${money(c.cost)} ÷ (1 − ${c.t})`:`${money(c.cost)} × (1 + ${c.t})`} · ${money(c.price/job.area)}/sf</span></td><td class="n">${money(c.price)}</td></tr>`);
+  rows.push(`<tr><td>HST<span class="how">${money(c.price)} × ${rates.hst}%</span></td><td class="n">${money(c.hst)}</td></tr>`);
+  rows.push(`<tr class="total"><td>Total</td><td class="n">${money(c.total)}</td></tr>`);
+  $("lines").innerHTML=rows.join("");
+  const realMargin=(c.pMarkup-c.cost)/c.pMarkup*100;
+  $("compare").innerHTML=`<div class="${mode==="markup"?"on":""}"><small>${rates.target}% markup</small><b>${money(c.pMarkup)}</b><small>real margin ${realMargin.toFixed(1)}%</small></div><div class="${mode==="margin"?"on":""}"><small>${rates.target}% gross margin</small><b>${money(c.pMargin)}</b><small>${money(c.pMargin-c.pMarkup)} more on this job</small></div>`;
+  const f=flags(c);$("flags").innerHTML=f.map(([a,b,s])=>`<div class="flag"><b>${a}</b> ${b}<small>${s}</small></div>`).join("");
+  $("quote").textContent=quoteText(c,h);
+  store.set("job",job);
+}
+function addLog(msg){const t=new Date().toLocaleTimeString("en-CA",{hour:"2-digit",minute:"2-digit",second:"2-digit"});log.unshift([t,msg]);if(log.length>40)log.pop();$("log").innerHTML=log.map(([t,m])=>`<div><b>${t}</b> ${m}</div>`).join("")}
+let lastMsg="";function changed(msg){if(msg&&msg!==lastMsg){addLog(msg);lastMsg=msg}render()}
+
+/* ---------- wiring ---------- */
+function applySay(text){
+  const p=parse(text);job={client:"",area:null,edge:null,exposure:null,grout:null,...p};
+  const got=Object.keys(p).map(k=>k+"="+p[k]).join(", ")||"nothing it recognised";
+  addLog(`Heard: “${text.slice(0,90)}${text.length>90?"…":""}” → ${got}`);lastMsg="";render();
+}
+let tm;$("say").addEventListener("input",e=>{clearTimeout(tm);tm=setTimeout(()=>applySay(e.target.value),500)});
+EXAMPLES.forEach(x=>{const b=document.createElement("button");b.className="chip";b.type="button";b.textContent=x;b.onclick=()=>{$("say").value=x;applySay(x)};$("examples").appendChild(b)});
+$("f-client").addEventListener("change",e=>{job.client=e.target.value.trim();changed("Client set: "+job.client)});
+$("f-area").addEventListener("change",e=>{job.area=num(e.target.value)||null;changed("Area set: "+job.area)});
+$("f-edge").addEventListener("change",e=>{const v=e.target.value.trim();job.edge=v===""?null:num(v);changed("Edging set: "+job.edge)});
+$("approve").onclick=()=>{approval={hash:hashOf(state())};addLog(`Todd approved draft ${approval.hash}. Scope: draft only. Recipients: none. Nothing sent.`);render()};
+$("reject").onclick=()=>{approval=null;addLog("Todd rejected this draft. Nothing sent.");render()};
+$("copy").onclick=()=>{const t=$("quote").textContent;const done=()=>{$("copy-msg").textContent="Copied. Paste it into your own email or text when you're ready. The desk didn't send anything.";addLog("Quote text copied by Todd. Not sent by the desk.")};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,()=>{selectQuote();$("copy-msg").textContent="Copy was blocked here. The quote is selected: long-press and choose Copy."})}else{selectQuote()}};
+function selectQuote(){const r=document.createRange();r.selectNodeContents($("quote"));const s=getSelection();s.removeAllRanges();s.addRange(r)}
+$("reset-rates").onclick=()=>{mine={};store.set("mine",mine);store.set("rates",null);loadRates();renderRates();changed("Rates reset to samples")};
+
+renderRates();
+const saved=store.get("job");
+if(saved&&saved.area){job=saved;addLog("Restored the last job on this phone.");render()}
+else{$("say").value=EXAMPLES[0];applySay(EXAMPLES[0])}
+})();
+</script>
+
+</html>
