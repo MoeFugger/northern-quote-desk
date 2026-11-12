@@ -112,6 +112,7 @@ select.full,input.full{width:100%;padding:6px 8px;border:1px solid var(--line);b
       <label><input type="checkbox" id="snap" checked> Snap to drawing</label>
       <label><input type="checkbox" id="ortho" checked> Square corners</label>
       <label title="Todd: door jambs are not corners; their length is in the edges"><input type="checkbox" id="jambs"> Count door-jamb corners</label>
+      <label title="The client's own shading. Hidden by default so only what is counted is shaded."><input type="checkbox" id="showMarkup"> Show client's markup</label>
     </div>
     <div id="hint">Drag to move around the plan.</div>
     <div class="row" id="draftBtns" hidden>
@@ -342,6 +343,33 @@ function fitToWalls(it,auto){
          if(keep[nb]&&!wide[nb]&&!seen[nb]){seen[nb]=1;list.push(nb)}if(wide[nb])t=true}if(t)touch++}
      const lenPx=Math.max(x2-x1,y2-y1)+1,widIn=list.length/lenPx/pxIn;
      if(lenPx/pxIn>=18&&widIn<=5&&touch<.3*lenPx){for(const c of list)keep[c]=0;pockets++}}}
+  // No floor the client didn't ask for. A piece outside their outline stays only if it is a doorway joining two
+  // parts of their area, or it just fills the gap to a wall face (they drew a little short of the wall).
+  // Anything else (reaching into a doorway to another room, or outside) is left out and listed for Todd to ask about.
+  const optional=[];
+  {const pxIn=k*inch,nearWall=morph(wall,W,H,Math.round(5*pxIn),true),seen=new Uint8Array(W*H);
+   for(let s0=0;s0<keep.length;s0++){if(!keep[s0]||inSrc[s0]||seen[s0])continue;
+     const list=[s0];seen[s0]=1;const srcN=[];
+     for(let j=0;j<list.length;j++){const c=list[j],x=c%W,y=(c/W)|0;
+       for(const nb of [x>0?c-1:-1,x<W-1?c+1:-1,y>0?c-W:-1,y<H-1?c+W:-1]){if(nb<0)continue;
+         if(keep[nb]&&!inSrc[nb]&&!seen[nb]){seen[nb]=1;list.push(nb)}else if(inSrc[nb])srcN.push(nb)}}
+     // doorway between two parts of their area: their area touches this piece in two separate places
+     const grp=new Map();let groups=0;const srcSet=new Set(srcN);
+     for(const c of srcN){if(grp.has(c))continue;groups++;const q=[c];grp.set(c,groups);let n=0;
+       while(q.length){const d=q.pop();n++;const x=d%W,y=(d/W)|0;
+         for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++){const e=(y+dy)*W+x+dx;if(srcSet.has(e)&&!grp.has(e)){grp.set(e,groups);q.push(e)}}}
+       if(n<3*pxIn)groups--}
+     if(groups>=2)continue;
+     // otherwise keep only the part close to a wall, and only if what's left is backed by wall
+     const near=list.filter(c=>nearWall[c]),far=list.filter(c=>!nearWall[c]);
+     let wallSide=0,openSide=0;const nearSet=new Set(near);
+     for(const c of near){const x=c%W,y=(c/W)|0;
+       for(const nb of [x>0?c-1:-1,x<W-1?c+1:-1,y>0?c-W:-1,y<H-1?c+W:-1]){if(nb<0||nearSet.has(nb)||inSrc[nb])continue;
+         if(wall[nb])wallSide++;else openSide++}}
+     const dropped=wallSide>=.6*(wallSide+openSide)?far:list;
+     for(const c of dropped)keep[c]=0;
+     if(pt2ToSf(dropped.length/(k*k))>=.2){let sx=0,sy=0;for(const c of dropped){sx+=c%W;sy+=(c/W)|0}
+       optional.push({sf:pt2ToSf(dropped.length/(k*k)),at:[x0+sx/dropped.length/k,y0+sy/dropped.length/k]})}}}
   // trace the boundary of the kept floor (pixel edges, clockwise on screen), then straighten it
   const at=(x,y)=>x>=0&&y>=0&&x<W&&y<H&&keep[y*W+x];const out=new Map();
   const add=(ax,ay,bx,by)=>{const key=ax+","+ay;let l=out.get(key);if(!l)out.set(key,l=[]);l.push([bx,by])};
@@ -374,7 +402,7 @@ function fitToWalls(it,auto){
   if(!it.orig){it.orig=it.pts.map(v=>v.slice());it.origEdges=it.edges.slice()}
   const before={sf:pt2ToSf(Math.abs(polyArea(it.orig))),corners:(()=>{const o={pts:it.orig,edges:it.orig.map(()=>true),kind:it.kind};const c=corners(o);return c.inside+c.outside})()};
   S.items=S.items.filter(x=>x.parent!==it.id);
-  it.pts=outers[0].p;it.edges=sideEdges(it.pts,false);it.skip=[];it.fitted=before;it.pockets=pockets;
+  it.pts=outers[0].p;it.edges=sideEdges(it.pts,false);it.skip=[];it.fitted=before;it.pockets=pockets;it.optional=optional;
   outers.slice(1).filter(x=>pt2ToSf(Math.abs(x.a))>=1).forEach((x,j)=>S.items.push({id:"i"+(S.nextId++),kind:"area",name:`${it.name}, part ${j+2}`,
     pts:x.p,edges:sideEdges(x.p,false),page:it.page,source:"Found when fitting to walls",parent:it.id}));
   holes.forEach((x,j)=>S.items.push({id:"i"+(S.nextId++),kind:"cut",name:`${it.name}, column/wall ${j+1}`,
@@ -509,7 +537,8 @@ function paint(){
   let dpr=window.devicePixelRatio||1;const MAX=16e6;if(w*h*dpr*dpr>MAX)dpr=Math.sqrt(MAX/(w*h));
   if(S.renderTask)S.renderTask.cancel();
   const off=document.createElement("canvas");off.width=Math.ceil(w*dpr);off.height=Math.ceil(h*dpr);
-  const task=S.renderTask=S.page.render({canvasContext:off.getContext("2d"),viewport:vp,transform:[dpr,0,0,dpr,-x0*dpr,-y0*dpr]});
+  const task=S.renderTask=S.page.render({canvasContext:off.getContext("2d"),viewport:vp,transform:[dpr,0,0,dpr,-x0*dpr,-y0*dpr],
+    annotationMode:$("showMarkup").checked?pdfjsLib.AnnotationMode.ENABLE:pdfjsLib.AnnotationMode.DISABLE});
   return task.promise.then(()=>{if(task!==S.renderTask)return;
     cv.width=off.width;cv.height=off.height;cv.getContext("2d").drawImage(off,0,0);
     Object.assign(cv.style,{left:x0+"px",top:y0+"px",width:w+"px",height:h+"px"});S.painted={x0,y0,w,h,z:S.zoom}})
@@ -639,15 +668,18 @@ const COL={area:"var(--area)",cut:"var(--cut)",joint:"var(--joint)"};
 function redraw(){
   const ov=$("ov");if(!S.vp){ov.innerHTML="";return}
   const P=pts=>pts.map(p=>toScr(p).map(v=>v.toFixed(1)).join(",")).join(" ");let h="";
+  for(const it of pageItems())for(const o of it.optional||[]){const q=toScr(o.at);
+    h+=`<circle cx="${q[0]}" cy="${q[1]}" r="9" fill="#fff" stroke="var(--joint)" stroke-width="2" stroke-dasharray="3 2"><title>Not included: ${n1(o.sf)} sq ft past the client's outline. Ask the client.</title></circle><text x="${q[0]}" y="${q[1]+4}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--joint)">?</text>`}
   for(const it of pageItems())if(it.orig)h+=`<polygon points="${P(it.orig)}" fill="none" stroke="#2B6A35" stroke-width="1.5" stroke-dasharray="6 4"/>`;
   for(const it of pageItems()){const c=COL[it.kind],sel=S.sel===it.id;
     if(it.kind==="joint"){h+=`<polyline points="${P(it.pts)}" fill="none" stroke="${c}" stroke-width="${sel?5:3.5}" stroke-dasharray="10 5"/>`;continue}
-    h+=`<polygon points="${P(it.pts)}" fill="${c}" fill-opacity="${it.kind==="cut"?.28:.16}" stroke="none"/>`;
+    if(it.kind==="cut")h+=`<polygon points="${P(it.pts)}" fill="#fff" fill-opacity=".9" stroke="none"/><polygon points="${P(it.pts)}" fill="${c}" fill-opacity=".22" stroke="none"/>`;
+    else h+=`<polygon points="${P(it.pts)}" fill="${c}" fill-opacity=".22" stroke="none"/>`;
     const n=it.pts.length;
     for(let i=0;i<n;i++){const a=toScr(it.pts[i]),b=toScr(it.pts[(i+1)%n]);
       h+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${c}" stroke-width="${sel?3.5:2.5}" ${it.edges[i]?"":'stroke-dasharray="3 5" stroke-opacity=".6"'}/>`}
     const ctr=centroid(it.pts),m=S.R?measure(it):null,cs=toScr(ctr);
-    if(m)h+=`<text x="${cs[0]}" y="${cs[1]}" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-weight="600" font-size="13" fill="${c}" stroke="#fff" stroke-width="3" paint-order="stroke">${esc(it.name)}: ${n0(it.kind==="cut"?-m.sf:m.sf)} sf</text>`}
+    if(m)h+=`<text x="${cs[0]}" y="${cs[1]}" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-weight="600" font-size="13" fill="${c}" stroke="#fff" stroke-width="3" paint-order="stroke">${esc(it.name)}: ${it.kind==="cut"?"−":""}${m.sf<10?n1(m.sf):n0(m.sf)} sf</text>`}
   if(S.tool==="edit")for(const it of pageItems()){const n=it.pts.length;
     const cst=cornerStatus(it);
     it.pts.forEach((p,i)=>{const q=toScr(p),k=cst[i];
@@ -684,7 +716,8 @@ function summary(){
       if(it.fitted){const kids=S.items.filter(x=>x.parent===it.id).map(measure);
         const net=m.sf+kids.reduce((t,x,j)=>t+(S.items.filter(y=>y.parent===it.id)[j].kind==="cut"?-x.sf:x.sf),0);
         const cor=m.inside+m.outside+kids.reduce((t,x)=>t+x.inside+x.outside,0),ed=m.edge+kids.reduce((t,x)=>t+x.edge,0);
-        chk+=`<div class="check warn">${it.source==="Client markup on plan"?"Client's outline":"Outline as traced"}: ${n0(it.fitted.sf)} sf, ${it.fitted.corners} corners.<br>Fitted to the walls: ${n0(net)} sf net, ${cor} corners, ${n0(ed)} lin ft of edges (including what was found inside).${it.pockets?` ${it.pockets} pocket-door slot${it.pockets>1?"s":""} treated as wall.`:""} Check the fit in Edit.</div>`}
+        chk+=`<div class="check warn">${it.source==="Client markup on plan"?"Client's outline":"Outline as traced"}: ${n0(it.fitted.sf)} sf, ${it.fitted.corners} corners.<br>Fitted to the walls: ${n0(net)} sf net, ${cor} corners, ${n0(ed)} lin ft of edges (including what was found inside).${it.pockets?` ${it.pockets} pocket-door slot${it.pockets>1?"s":""} treated as wall.`:""} Check the fit in Edit.</div>`;
+        if(it.optional&&it.optional.length)chk+=`<div class="check">Not included (the client didn't mark it): ${it.optional.length} small piece${it.optional.length>1?"s":""} past their outline at doorways or outside, ${n1(it.optional.reduce((t,o)=>t+o.sf,0))} sq ft in all. Ask the client before adding.</div>`}
       if(it.labelSf!=null){const own=it.fitted?it.fitted.sf:m.sf,diff=Math.abs(own-it.labelSf)/it.labelSf;   // label vs the client's own outline
         chk=(diff<.01?`<div class="check ok">✓ Plan label says ${n0(it.labelSf)} sf: matches the client's outline, so the scale is right.</div>`
           :`<div class="check warn">Plan label says ${n0(it.labelSf)} sf, the client's outline measures ${n0(own)}. Check the scale.</div>`)+chk}}
@@ -732,6 +765,7 @@ $("copyQ").onclick=()=>copyText(quoteLine(),`Copied: "${quoteLine()}". Paste it 
 $("copyAll").onclick=()=>copyText($("out").value,"Takeoff sheet copied.");
 $("print").onclick=()=>window.print();
 $("jambs").onchange=()=>{redraw();summary()};
+$("showMarkup").onchange=()=>{S.painted=null;paint()};
 ["access","exposure","notes"].forEach(id=>$(id).addEventListener("input",()=>{save();sheet()}));
 
 /* ---------- remember work per plan (this browser only) ---------- */
