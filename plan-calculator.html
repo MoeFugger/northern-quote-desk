@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Northern Plan Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Questrial&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ground:#ECEDEF;--surface:#FFFFFF;--sunk:#E1E3E6;--ink:#16181B;--muted:#585E66;--line:#CDD1D6;--accent:#1D67CD;
+  --bar:#000000;--warn:#8A5A00;--stop:#9B2C22;--ok:#2B6A35;--area:#1D67CD;--cut:#B3261E;--joint:#C26A00;--draft:#7A3FC0;
+  --sans:"IBM Plex Sans",system-ui,sans-serif;--head:"Questrial","IBM Plex Sans",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;color-scheme:light}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ground:#141619;--surface:#1D2024;--sunk:#272B30;--ink:#E9EBEE;
+  --muted:#9AA1AA;--line:#3A3F46;--accent:#5B9BFF;--warn:#E0A84A;--stop:#F08A80;--ok:#7CC487;color-scheme:dark}}
+:root[data-theme="dark"]{--ground:#141619;--surface:#1D2024;--sunk:#272B30;--ink:#E9EBEE;--muted:#9AA1AA;--line:#3A3F46;
+  --accent:#5B9BFF;--warn:#E0A84A;--stop:#F08A80;--ok:#7CC487;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{background:var(--ground);color:var(--ink);font:15px/1.45 var(--sans);display:flex;flex-direction:column}
+button,select,input{font:inherit;color:inherit}
+header{background:var(--bar);color:#fff;padding:8px 16px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+header h1{font:20px var(--head);margin:0 8px 0 0;letter-spacing:.3px}
+header .grp{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+header label.btn,header button,header select{background:#25292E;border:1px solid #444A52;color:#fff;border-radius:6px;padding:5px 10px;cursor:pointer}
+header select{max-width:210px}
+header .dim{color:#B9BEC4;font-size:13px}
+.btn.primary,header label.primary{background:var(--accent);border-color:var(--accent)}
+main{flex:1;display:flex;min-height:0}
+#viewer{flex:1;overflow:auto;position:relative;background:var(--sunk);min-height:300px}
+#stage{position:relative;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none}
+#stage{background:#fff}
+#cv{position:absolute;left:0;top:0}
+#ov{position:absolute;left:0;top:0;overflow:visible}
+#empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;color:var(--muted)}
+#empty[hidden]{display:none}
+#empty div{max-width:420px}
+#empty b{color:var(--ink)}
+aside{width:380px;max-width:100%;overflow:auto;background:var(--surface);border-left:1px solid var(--line);padding:12px 16px 24px}
+aside h2{font:15px var(--head);text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:16px 0 6px}
+.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.tools button{border:1px solid var(--line);background:var(--ground);border-radius:6px;padding:6px 4px;cursor:pointer}
+.tools button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.row label{display:flex;gap:4px;align-items:center}
+.small{font-size:13px;color:var(--muted)}
+#hint{background:var(--ground);border-radius:6px;padding:8px 10px;margin:8px 0;font-size:14px}
+#draftBtns button,.list button,.out button{border:1px solid var(--line);background:var(--ground);border-radius:6px;padding:4px 10px;cursor:pointer}
+#draftBtns button.go{background:var(--accent);color:#fff;border-color:var(--accent)}
+.list{display:flex;flex-direction:column;gap:6px}
+.item{border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.item.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.item .top{display:flex;gap:6px;align-items:center}
+.item input{flex:1;min-width:0;border:1px solid transparent;background:transparent;border-radius:4px;padding:2px 4px}
+.item input:focus{border-color:var(--line);background:var(--ground)}
+.sw{width:12px;height:12px;border-radius:3px;flex:none}
+.nums{font:13px var(--mono);color:var(--muted);margin-top:2px}
+.check{font-size:13px;margin-top:2px}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.stop{color:var(--stop)}
+table.tot{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+table.tot td{padding:4px 0;border-bottom:1px solid var(--line)}
+table.tot td:last-child{text-align:right;font:500 16px var(--mono)}
+select.full,input.full{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.out textarea{width:100%;min-height:150px;font:13px/1.4 var(--mono);border:1px solid var(--line);border-radius:6px;padding:8px;background:var(--ground);color:var(--ink)}
+.priv{margin-top:16px;font-size:12.5px;color:var(--muted)}
+@media (max-width:860px){main{flex-direction:column}#viewer{flex:none;height:62vh}aside{width:auto;border-left:0;border-top:1px solid var(--line)}}
+@media print{header,#hint,#draftBtns,.tools,.noprint,.priv{display:none!important}
+  body{display:block;background:#fff;color:#000}main{display:block}#viewer{overflow:visible;height:auto;background:#fff}
+  aside{width:auto;border:0}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+<header>
+  <h1>Plan Calculator</h1>
+  <div class="grp">
+    <label class="btn primary" for="file">Open plan (PDF)</label>
+    <input id="file" type="file" accept="application/pdf,.pdf" hidden>
+  </div>
+  <div class="grp">
+    <button id="prev" aria-label="Previous page">&#8249;</button>
+    <span id="pageLbl" class="dim">No plan</span>
+    <button id="next" aria-label="Next page">&#8250;</button>
+  </div>
+  <div class="grp">
+    <span class="dim">Scale</span>
+    <select id="scale" aria-label="Drawing scale"></select>
+  </div>
+  <div class="grp">
+    <button id="zout" aria-label="Zoom out">&minus;</button>
+    <button id="zfit">Fit</button>
+    <button id="zin" aria-label="Zoom in">+</button>
+  </div>
+</header>
+<main>
+  <section id="viewer">
+    <div id="stage"><canvas id="cv"></canvas><svg id="ov"></svg></div>
+    <div id="empty"><div><b>Open a PDF plan to start.</b><br>Areas the client already outlined on the plan are picked up and measured automatically. You can also trace areas, cut-outs and control joints yourself.</div></div>
+  </section>
+  <aside>
+    <div class="tools" id="tools">
+      <button data-t="move" class="on">Move</button>
+      <button data-t="area">Area</button>
+      <button data-t="cut">Cut-out</button>
+      <button data-t="joint">Joint</button>
+      <button data-t="check">Check</button>
+      <button data-t="edit">Edit</button>
+    </div>
+    <div class="row small">
+      <label><input type="checkbox" id="snap" checked> Snap to drawing</label>
+      <label><input type="checkbox" id="ortho" checked> Square corners</label>
+      <label title="Todd: door jambs are not corners; their length is in the edges"><input type="checkbox" id="jambs"> Count door-jamb corners</label>
+    </div>
+    <div id="hint">Drag to move around the plan.</div>
+    <div class="row" id="draftBtns" hidden>
+      <button class="go" id="finish">Finish</button>
+      <button id="undo">Undo point</button>
+      <button id="cancel">Cancel</button>
+    </div>
+
+    <h2>Takeoff</h2>
+    <div class="list" id="list"><div class="small">Nothing measured yet.</div></div>
+
+    <h2>Totals</h2>
+    <table class="tot">
+      <tr><td>Concrete</td><td id="tSf">0 sq ft</td></tr>
+      <tr><td>Edges</td><td id="tEdge">0 lin ft</td></tr>
+      <tr><td>Control joints</td><td id="tJoint">0 lin ft</td></tr>
+      <tr><td>Corners</td><td id="tCorn">0</td></tr>
+    </table>
+    <div class="small" id="cornNote"></div>
+    <div class="small" id="openNote"></div>
+
+    <h2>Job</h2>
+    <div class="row" style="display:block">
+      <label class="small" for="access">Access (decides grinder size)</label>
+      <select id="access" class="full">
+        <option value="">Choose access</option>
+        <option>Drive-in / ground level</option>
+        <option>Walkout basement</option>
+        <option>Interior stairs only</option>
+        <option>Elevator / upper floor</option>
+        <option>Other (see notes)</option>
+      </select>
+    </div>
+    <div class="row" style="display:block">
+      <label class="small" for="exposure">Exposure</label>
+      <select id="exposure" class="full">
+        <option value="">Choose exposure</option>
+        <option value="cream">Cream</option>
+        <option value="minimal">Minimal</option>
+        <option value="random">Random</option>
+        <option value="full">Full</option>
+      </select>
+    </div>
+    <div class="row" style="display:block">
+      <label class="small" for="notes">Notes</label>
+      <input id="notes" class="full" placeholder="e.g. stairs are narrow, no elevator">
+    </div>
+
+    <h2>Takeoff sheet</h2>
+    <div class="out">
+      <textarea id="out" readonly></textarea>
+      <div class="row noprint">
+        <button id="copyQ">Copy for Quote Desk</button>
+        <button id="copyAll">Copy sheet</button>
+        <button id="print">Print</button>
+      </div>
+      <div class="small" id="copied"></div>
+    </div>
+    <p class="priv">The plan never leaves this device: it is read and measured inside this page. Measurements come from the drawing's own lines and its stated scale. Always check the scale with the Check tool on one printed dimension.</p>
+  </aside>
+</main>
+<script>
+"use strict";
+pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const $=id=>document.getElementById(id);
+const O=pdfjsLib.OPS;
+
+/* ---------- state ---------- */
+const S={doc:null,file:"",key:"",pageNum:1,page:null,vp:null,zoom:1,fit:1,R:null,scaleLabel:"",scaleSrc:"",
+  items:[],tool:"move",draft:[],cal:null,check:null,sel:null,snapPts:null,hover:null,seenMarkup:{},nextId:1,renderTask:null};
+const COMMON=[["1/8\" = 1'-0\"",96],["3/16\" = 1'-0\"",64],["1/4\" = 1'-0\"",48],["3/8\" = 1'-0\"",32],["1/2\" = 1'-0\"",24],
+  ["3/4\" = 1'-0\"",16],["1\" = 1'-0\"",12],["1\" = 10'",120],["1\" = 20'",240],["1:50",50],["1:100",100],["1:200",200]];
+
+/* ---------- units ---------- */
+// R = real length / paper length. PDF units are points (1/72 inch of paper).
+const ptToFt=pt=>pt*S.R/72/12;
+const pt2ToSf=a=>a*(S.R/72)**2/144;
+function fmtFtIn(ft){if(!isFinite(ft))return"-";let tot=Math.round(ft*12*4)/4;const f=Math.floor(tot/12);let i=tot-f*12;
+  const whole=Math.floor(i),q=Math.round((i-whole)*4);const frac=["","¼","½","¾"][q]||"";return `${f}'-${whole}${frac?" "+frac:""}"`}
+const n0=v=>Math.round(v).toLocaleString("en-CA");
+const n1=v=>v.toLocaleString("en-CA",{minimumFractionDigits:1,maximumFractionDigits:1});
+
+/* ---------- geometry (PDF coords) ---------- */
+const polyArea=p=>{let a=0;for(let i=0;i<p.length;i++){const[x1,y1]=p[i],[x2,y2]=p[(i+1)%p.length];a+=x1*y2-x2*y1}return a/2};
+const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+function sideLens(p,closed){const L=[];const n=closed?p.length:p.length-1;for(let i=0;i<n;i++)L.push(dist(p[i],p[(i+1)%p.length]));return L}
+function cornerStatus(it){
+  // Per vertex: "in"/"out" = counted inside/outside corner, "off" = a corner the user stopped counting
+  // (Todd: door jambs are not corners), null = not a corner (straight, or an open side with no wall).
+  // A corner turns more than 20 degrees with walls (edges) on both sides.
+  // Inside corner: two walls meet facing into the floor. Outside corner: a wall juts into the floor.
+  const p=it.pts,n=p.length,ccw=polyArea(p)>0,skip=it.skip||[];
+  return p.map((b,i)=>{const a=p[(i-1+n)%n],c=p[(i+1)%n];
+    if(it.kind==="joint"||!it.edges[(i-1+n)%n]||!it.edges[i])return null;
+    const v1=[b[0]-a[0],b[1]-a[1]],v2=[c[0]-b[0],c[1]-b[1]];
+    const ang=Math.atan2(v1[0]*v2[1]-v1[1]*v2[0],v1[0]*v2[0]+v1[1]*v2[1]);
+    if(Math.abs(ang)<20*Math.PI/180)return null;
+    if(skip[i])return"off";
+    if(it.jamb&&it.jamb[i]&&!$("jambs").checked)return"jamb";
+    let convex=(ang>0)===ccw; if(it.kind==="cut")convex=!convex;
+    return convex?"in":"out"})
+}
+function corners(it){
+  const st=cornerStatus(it),p=it.pts,n=p.length;let inside=0,outside=0,small=0,off=0,jamb=0;
+  st.forEach((k,i)=>{if(k==="off")off++;if(k==="jamb")jamb++;if(k!=="in"&&k!=="out")return;k==="in"?inside++:outside++;
+    if(ptToFt(dist(p[(i-1+n)%n],p[i]))<1||ptToFt(dist(p[i],p[(i+1)%n]))<1)small++});
+  return{inside,outside,small,off,jamb}
+}
+function measure(it){
+  if(it.kind==="joint"){return{lf:ptToFt(sideLens(it.pts,false).reduce((a,b)=>a+b,0))}}
+  const L=sideLens(it.pts,true);const edge=L.reduce((a,l,i)=>a+(it.edges[i]?l:0),0);
+  return{sf:pt2ToSf(Math.abs(polyArea(it.pts))),edge:ptToFt(edge),...corners(it)}
+}
+
+/* ---------- scale detection ---------- */
+const FR={"¼":.25,"½":.5,"¾":.75,"⅛":.125,"⅜":.375,"⅝":.625,"⅞":.875};
+function parseInches(s){s=s.trim().replace(/[⁄]/g,"/");let v=0;
+  const m=s.match(/^(\d+)?\s*(?:(\d+)\/(\d+))?\s*([¼½¾⅛⅜⅝⅞])?$/);if(!m)return NaN;
+  if(m[1])v+=+m[1];if(m[2])v+=m[2]/m[3];if(m[4])v+=FR[m[4]];return v||NaN}
+function detectScales(text){
+  const found={};const add=(label,R)=>{if(R>0&&R<5000){found[label]=found[label]||{label,R,count:0};found[label].count++}};
+  const t=text.replace(/[″”]/g,'"').replace(/[′’]/g,"'");
+  let re=/([\d\s\/⁄¼½¾⅛⅜⅝⅞]{1,8})"\s*=\s*1'\s*-?\s*0"?/g,m;
+  while((m=re.exec(t))){const pi=parseInches(m[1]);if(pi)add(`${m[1].trim()}" = 1'-0"`,12/pi)}
+  re=/\b1"\s*=\s*(\d+)'(?!\s*-?\s*\d)/g;while((m=re.exec(t)))add(`1" = ${m[1]}'`,12*m[1]);
+  re=/\b1\s*:\s*(\d{2,4})\b/g;while((m=re.exec(t)))add(`1:${m[1]}`,+m[1]);
+  return Object.values(found).sort((a,b)=>b.count-a.count)
+}
+function fillScaleSelect(det){
+  const sel=$("scale");sel.innerHTML="";
+  det.forEach(d=>sel.add(new Option(`${d.label} (read from plan)`,"d:"+d.R)));
+  COMMON.forEach(([l,R])=>{if(!det.some(d=>Math.abs(d.R-R)<1e-6))sel.add(new Option(l,"c:"+R))});
+  sel.add(new Option("Measure a known length…","cal"));
+  if(S.R){const o=[...sel.options].find(o=>o.value!=="cal"&&Math.abs(+o.value.slice(2)-S.R)<1e-6);
+    if(o)sel.value=o.value;else{sel.add(new Option(S.scaleLabel,"x:"+S.R),0);sel.selectedIndex=0}}
+}
+$("scale").onchange=e=>{const v=e.target.value;
+  if(v==="cal"){setTool("cal");return}
+  S.R=+v.slice(2);S.scaleLabel=e.target.selectedOptions[0].text.replace(" (read from plan)","");
+  S.scaleSrc=v[0]==="d"?"read from plan":"chosen by hand";save();redraw();summary()};
+
+/* ---------- snap points from the drawing ---------- */
+const G=24;
+function mul(m1,m2){return[m1[0]*m2[0]+m1[2]*m2[1],m1[1]*m2[0]+m1[3]*m2[1],m1[0]*m2[2]+m1[2]*m2[3],m1[1]*m2[2]+m1[3]*m2[3],
+  m1[0]*m2[4]+m1[2]*m2[5]+m1[4],m1[1]*m2[4]+m1[3]*m2[5]+m1[5]]}
+const FILLS=new Set([O.fill,O.eoFill,O.fillStroke,O.eoFillStroke,O.closeFillStroke,O.closeEOFillStroke]);
+async function buildSnap(page){
+  // Reads the drawing once: corner points for snapping, and filled shapes (walls) for "Fit to walls".
+  const ol=await page.getOperatorList();const grid=new Map();let ctm=[1,0,0,1,0,0];const st=[];let inAnn=0;
+  let fill=[0,0,0];const fst=[];let rings=[],ring=null;const fills=[];
+  const push=(x,y)=>{const X=ctm[0]*x+ctm[2]*y+ctm[4],Y=ctm[1]*x+ctm[3]*y+ctm[5];
+    if(ring)ring.push([X,Y]);
+    const k=Math.floor(X/G)+","+Math.floor(Y/G);let b=grid.get(k);if(!b)grid.set(k,b=[]);
+    if(!b.some(p=>Math.abs(p[0]-X)<.3&&Math.abs(p[1]-Y)<.3))b.push([X,Y])};
+  for(let i=0;i<ol.fnArray.length;i++){const f=ol.fnArray[i],a=ol.argsArray[i];
+    if(FILLS.has(f)||f===O.stroke||f===O.closeStroke||f===O.endPath){
+      if(FILLS.has(f)&&!inAnn&&rings.length)fills.push({rings:rings.filter(r=>r.length>2),color:fill.slice()});
+      rings=[];ring=null;continue}
+    if(f===O.setFillRGBColor){fill=[a[0],a[1],a[2]];continue}
+    if(f===O.save){st.push(ctm);fst.push(fill)}else if(f===O.restore){ctm=st.pop()||[1,0,0,1,0,0];fill=fst.pop()||fill}
+    else if(f===O.transform)ctm=mul(ctm,a);
+    else if(f===O.paintFormXObjectBegin){st.push(ctm);if(a&&Array.isArray(a[0]))ctm=mul(ctm,a[0])}
+    else if(f===O.paintFormXObjectEnd)ctm=st.pop()||ctm;
+    else if(f===O.beginAnnotation)inAnn++;else if(f===O.endAnnotation)inAnn=Math.max(0,inAnn-1);
+    else if(f===O.constructPath&&!inAnn){const ops=a[0],c=a[1];let k=0;
+      for(const op of ops){
+        if(op===O.moveTo){rings.push(ring=[]);push(c[k],c[k+1]);k+=2}
+        else if(op===O.lineTo){if(!ring)rings.push(ring=[]);push(c[k],c[k+1]);k+=2}
+        else if(op===O.closePath){ring=null}
+        else if(op===O.curveTo){push(c[k+4],c[k+5]);k+=6}
+        else if(op===O.curveTo2||op===O.curveTo3){push(c[k+2],c[k+3]);k+=4}
+        else if(op===O.rectangle){const x=c[k],y=c[k+1],w=c[k+2],h=c[k+3];rings.push(ring=[]);push(x,y);push(x+w,y);push(x+w,y+h);push(x,y+h);ring=null;k+=4}}}}
+  return{grid,fills}
+}
+function nearestSnap(pt,radius){
+  if(!S.snapPts||!$("snap").checked)return null;let best=null,bd=radius;
+  const cx=Math.floor(pt[0]/G),cy=Math.floor(pt[1]/G),r=Math.ceil(radius/G);
+  for(let i=cx-r;i<=cx+r;i++)for(let j=cy-r;j<=cy+r;j++){const b=S.snapPts.get(i+","+j);if(!b)continue;
+    for(const p of b){const d=dist(p,pt);if(d<bd){bd=d;best=p}}}
+  return best&&[best[0],best[1]]
+}
+
+/* ---------- fit an outline to the real walls ---------- */
+// A client's outline shows the area they want, not the walls. This rebuilds it along the wall faces in the
+// drawing so every jog, stub-out and pilaster is in the outline (and in the corner count), and turns
+// free-standing columns inside it into cut-outs. Sides with no wall next to them are marked open.
+function wallFills(){return(S.fills||[]).filter(f=>{const[r,g,b]=f.color;
+  if(Math.max(r,g,b)-Math.min(r,g,b)>12||r>235)return false;           // neutral grey/black only, not white
+  let a=0;for(const rg of f.rings)a+=Math.abs(polyArea(rg));const sf=pt2ToSf(a);
+  // grey wall pieces count at any real size (stub-outs are ~0.1 sq ft); small black shapes are arrowheads and ticks
+  return r<20?sf>=.25:sf>=.02})}
+function fitToWalls(it,auto){
+  if(!S.R)return false;
+  const walls=wallFills();
+  if(!walls.length){if(!auto)alert("No filled walls found on this plan, so it can't fit automatically. Adjust the outline by hand in Edit.");return false}
+  const src=it.orig||it.pts,inch=72/S.R;                                 // one real inch, in PDF points
+  let k=3/inch;                                                          // about 3 pixels per real inch
+  const tol=4*inch,pad=tol+12*inch;
+  const xs=src.map(p=>p[0]),ys=src.map(p=>p[1]);const x0=Math.min(...xs)-pad,y0=Math.min(...ys)-pad;
+  const wPt=Math.max(...xs)+pad-x0,hPt=Math.max(...ys)+pad-y0;
+  if(wPt*hPt*k*k>12e6)k=Math.sqrt(12e6/(wPt*hPt));
+  const W=Math.ceil(wPt*k),H=Math.ceil(hPt*k);
+  const mk=()=>{const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d",{willReadFrequently:true});
+    x.setTransform(k,0,0,k,-x0*k,-y0*k);return x};
+  const path=(x,rings)=>{x.beginPath();for(const r of rings){x.moveTo(r[0][0],r[0][1]);for(let i=1;i<r.length;i++)x.lineTo(r[i][0],r[i][1]);x.closePath()}};
+  const read=x=>{const d=x.getImageData(0,0,W,H).data,m=new Uint8Array(W*H);for(let i=0;i<m.length;i++)m[i]=d[i*4+3]>127?1:0;return m};
+  const cA=mk();cA.fillStyle="#000";path(cA,[src]);cA.fill();const inSrc=read(cA);                  // client's area
+  const cW=mk();cW.fillStyle="#000";for(const w of walls){path(cW,w.rings);cW.fill()}const wall=read(cW); // walls only
+  const cZ=mk();cZ.fillStyle=cZ.strokeStyle="#000";cZ.lineWidth=2*tol;cZ.lineJoin="round";path(cZ,[src]);cZ.fill();cZ.stroke();
+  const zone=read(cZ);                                                   // client's area plus 4" to reach wall faces
+  const free=new Uint8Array(W*H);for(let i=0;i<free.length;i++)free[i]=zone[i]&&!wall[i]?1:0;
+  // keep the open-floor pieces that are mostly inside the client's area
+  const lab=new Int32Array(W*H),keep=new Uint8Array(W*H);let id=0;const q=new Int32Array(W*H);
+  for(let s0=0;s0<free.length;s0++){if(!free[s0]||lab[s0])continue;id++;let h=0,t=0,n=0,ins=0;q[t++]=s0;lab[s0]=id;
+    while(h<t){const c=q[h++];n++;ins+=inSrc[c];const x=c%W,y=(c/W)|0;
+      for(const nb of [x>0?c-1:-1,x<W-1?c+1:-1,y>0?c-W:-1,y<H-1?c+W:-1])if(nb>=0&&free[nb]&&!lab[nb]){lab[nb]=id;q[t++]=nb}}
+    if(ins/n>=.5&&ins/(k*k)>=1/pt2ToSf(1))for(let j=0;j<t;j++)keep[q[j]]=1}
+  // Pocket doors: the slot a pocket door slides into is a long, narrow gap between two wall skins. It is wall,
+  // not floor. Find strips under 6" wide and 18"+ long that touch wide floor only at their ends, and fill them in.
+  // (A doorway through a thin wall is also narrow, but it touches floor along both long sides, so it stays.)
+  let pockets=0;
+  {const pxIn=k*inch,r=Math.max(1,Math.round(3*pxIn));const wide=morph(morph(keep,W,H,r,false),W,H,r,true);
+   const seen=new Uint8Array(W*H);
+   for(let s0=0;s0<keep.length;s0++){if(!keep[s0]||wide[s0]||seen[s0])continue;
+     const list=[s0];seen[s0]=1;let x1=W,x2=0,y1=H,y2=0,touch=0;
+     for(let j=0;j<list.length;j++){const c=list[j],x=c%W,y=(c/W)|0;if(x<x1)x1=x;if(x>x2)x2=x;if(y<y1)y1=y;if(y>y2)y2=y;
+       let t=false;for(const nb of [x>0?c-1:-1,x<W-1?c+1:-1,y>0?c-W:-1,y<H-1?c+W:-1]){if(nb<0)continue;
+         if(keep[nb]&&!wide[nb]&&!seen[nb]){seen[nb]=1;list.push(nb)}if(wide[nb])t=true}if(t)touch++}
+     const lenPx=Math.max(x2-x1,y2-y1)+1,widIn=list.length/lenPx/pxIn;
+     if(lenPx/pxIn>=18&&widIn<=5&&touch<.3*lenPx){for(const c of list)keep[c]=0;pockets++}}}
+  // trace the boundary of the kept floor (pixel edges, clockwise on screen), then straighten it
+  const at=(x,y)=>x>=0&&y>=0&&x<W&&y<H&&keep[y*W+x];const out=new Map();
+  const add=(ax,ay,bx,by)=>{const key=ax+","+ay;let l=out.get(key);if(!l)out.set(key,l=[]);l.push([bx,by])};
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(!keep[y*W+x])continue;
+    if(!at(x,y-1))add(x,y,x+1,y);if(!at(x+1,y))add(x+1,y,x+1,y+1);if(!at(x,y+1))add(x+1,y+1,x,y+1);if(!at(x-1,y))add(x,y+1,x,y)}
+  const loops=[];
+  for(const [key,l] of out)while(l.length){const st=key.split(",").map(Number);const lp=[st];let cur=l.pop();
+    while(cur&&!(cur[0]===st[0]&&cur[1]===st[1])){lp.push(cur);const nx=out.get(cur[0]+","+cur[1]);cur=nx&&nx.pop()}
+    if(lp.length>3)loops.push(lp)}
+  const toPt=([x,y])=>[x0+x/k,y0+y/k];
+  const clean=lp=>{let p=dp(lp.concat([lp[0]]),1.6).slice(0,-1).map(toPt);
+    p=p.map(v=>nearestSnapAny(v,1.5*inch)||v);
+    for(let again=true;again;){again=false;for(let i=0;i<p.length&&p.length>3;i++){const a=p[(i-1+p.length)%p.length],b=p[i],c=p[(i+1)%p.length];
+      const cr=(b[0]-a[0])*(c[1]-b[1])-(b[1]-a[1])*(c[0]-b[0]);
+      if(dist(a,b)<.4*inch||Math.abs(cr)<1e-6*dist(a,b)*dist(b,c)+.02*inch*inch){p.splice(i,1);again=true;break}}}
+    return p};
+  const polys=loops.map(clean).filter(p=>p.length>=3).map(p=>({p,a:polyArea(p)}));
+  const outerSign=Math.sign(polys.reduce((m,x)=>Math.abs(x.a)>Math.abs(m.a)?x:m,{a:0}).a);
+  const outers=polys.filter(x=>Math.sign(x.a)===outerSign).sort((a,b)=>Math.abs(b.a)-Math.abs(a.a));
+  const holes=polys.filter(x=>Math.sign(x.a)!==outerSign&&pt2ToSf(Math.abs(x.a))>=.03);   // stub-outs standing in the floor
+  if(!outers.length)return false;
+  // which sides have a wall right behind them? the rest are open (no edging there)
+  const wallAt=(p)=>{const x=Math.round((p[0]-x0)*k),y=Math.round((p[1]-y0)*k);return x>=0&&y>=0&&x<W&&y<H&&wall[y*W+x]};
+  const sideEdges=(p,hole)=>p.map((a,i)=>{if(hole)return true;const b=p[(i+1)%p.length],L=dist(a,b);if(!L)return true;
+    const nx=(b[1]-a[1])/L,ny=(a[0]-b[0])/L;/* perpendicular to the side */let hit=0,tot=0;
+    for(let t=.1;t<.95;t+=.1){const m=[a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1])];tot++;
+      const dir=inside([m[0]+nx*inch,m[1]+ny*inch],p)?-1:1;
+      for(let d=0;d<=6;d++)if(wallAt([m[0]+dir*nx*d*inch,m[1]+dir*ny*d*inch])){hit++;break}}
+    return hit/tot>=.6});
+  if(!it.orig){it.orig=it.pts.map(v=>v.slice());it.origEdges=it.edges.slice()}
+  const before={sf:pt2ToSf(Math.abs(polyArea(it.orig))),corners:(()=>{const o={pts:it.orig,edges:it.orig.map(()=>true),kind:it.kind};const c=corners(o);return c.inside+c.outside})()};
+  S.items=S.items.filter(x=>x.parent!==it.id);
+  it.pts=outers[0].p;it.edges=sideEdges(it.pts,false);it.skip=[];it.fitted=before;it.pockets=pockets;
+  outers.slice(1).filter(x=>pt2ToSf(Math.abs(x.a))>=1).forEach((x,j)=>S.items.push({id:"i"+(S.nextId++),kind:"area",name:`${it.name}, part ${j+2}`,
+    pts:x.p,edges:sideEdges(x.p,false),page:it.page,source:"Found when fitting to walls",parent:it.id}));
+  holes.forEach((x,j)=>S.items.push({id:"i"+(S.nextId++),kind:"cut",name:`${it.name}, column/wall ${j+1}`,
+    pts:x.p,edges:x.p.map(()=>true),page:it.page,source:"Found inside the area when fitting to walls",parent:it.id}));
+  return true
+}
+function morph(src,W,H,r,grow){ // square-window erode (grow=false) or dilate (grow=true), done row then column
+  const tmp=new Uint8Array(W*H),out=new Uint8Array(W*H),hit=grow?1:0;
+  for(let y=0;y<H;y++){const o=y*W;for(let x=0;x<W;x++){let v=1-hit;const a=Math.max(0,x-r),b=Math.min(W-1,x+r);
+    for(let i=a;i<=b;i++)if(src[o+i]===hit){v=hit;break}tmp[o+x]=v}}
+  for(let x=0;x<W;x++)for(let y=0;y<H;y++){let v=1-hit;const a=Math.max(0,y-r),b=Math.min(H-1,y+r);
+    for(let i=a;i<=b;i++)if(tmp[i*W+x]===hit){v=hit;break}out[y*W+x]=v}
+  return out}
+function unfit(it){if(!it.orig)return;it.pts=it.orig;it.edges=it.origEdges||it.orig.map(()=>true);it.skip=[];
+  delete it.orig;delete it.origEdges;delete it.fitted;S.items=S.items.filter(x=>x.parent!==it.id)}
+function dp(pts,eps){ // Douglas-Peucker line simplification
+  if(pts.length<3)return pts;const a=pts[0],b=pts[pts.length-1];let mi=0,md=0;
+  for(let i=1;i<pts.length-1;i++){const d=segDist(pts[i],a,b);if(d>md){md=d;mi=i}}
+  if(md<=eps)return[a,b];return dp(pts.slice(0,mi+1),eps).slice(0,-1).concat(dp(pts.slice(mi),eps))}
+function nearestSnapAny(pt,radius){if(!S.snapPts)return null;let best=null,bd=radius;
+  const cx=Math.floor(pt[0]/G),cy=Math.floor(pt[1]/G),r=Math.ceil(radius/G);
+  for(let i=cx-r;i<=cx+r;i++)for(let j=cy-r;j<=cy+r;j++){const b=S.snapPts.get(i+","+j);if(!b)continue;
+    for(const p of b){const d=dist(p,pt);if(d<bd){bd=d;best=p}}}return best&&[best[0],best[1]]}
+
+/* ---------- rough openings (R.O. labels) ---------- */
+// "R.O.-38" X 98"" = rough opening 38" wide, 98" high: a door or pass-through in a wall. The floor runs through it,
+// the two wall ends facing each other across it are the jambs (Todd: jambs are not corners, their length is edge).
+function readOpenings(tc){
+  const out=[];
+  for(const t of tc.items){const s=t.str.replace(/[″”]/g,'"');
+    const m=s.match(/\bR\s*\.?\s*\/?\s*O\s*\.?\s*-?\s*([\d\s\/⁄¼½¾]+)"?\s*[xX×]\s*([\d\s\/⁄¼½¾]+)"?/);if(!m)continue;
+    const w=parseInches(m[1]),h=parseInches(m[2]);if(!(w>12&&w<240))continue;
+    const[a,b,,,x,y]=t.transform,L=Math.hypot(a,b)||1;
+    out.push({w,h,label:`R.O. ${m[1].trim()}" x ${m[2].trim()}"`,at:[x+a/L*t.width/2,y+b/L*t.width/2]})}
+  return out
+}
+function markOpenings(){
+  // For each R.O. label, find two wall faces that face each other across a gap of about the labelled width,
+  // over a short stretch (a wall's thickness). Either face can be part of a longer wall (e.g. the end of a
+  // partition). Those are the jambs. Rough openings leave room to shim, so within 2" of the label counts.
+  const inch=72/S.R,found=[];
+  const sides=[];for(const it of pageItems()){if(it.kind==="joint")continue;it.jamb=[];const n=it.pts.length;
+    for(let i=0;i<n;i++){const a=it.pts[i],b=it.pts[(i+1)%n],L=dist(a,b);if(L>=1.5*inch)sides.push({it,i,a,b,L})}}
+  // A pocket door's rough opening is framed at twice the door width (door + pocket), so the clear gap is half.
+  for(const o of S.openings||[])for(const pocket of[false,true]){if(pocket&&found.some(f=>f.o===o))break;const W0=pocket?o.w/2:o.w;let best=null;
+    for(let x=0;x<sides.length;x++)for(let y=x+1;y<sides.length;y++){const s1=sides[x],s2=sides[y];
+      const d=[(s1.b[0]-s1.a[0])/s1.L,(s1.b[1]-s1.a[1])/s1.L],d2=[(s2.b[0]-s2.a[0])/s2.L,(s2.b[1]-s2.a[1])/s2.L];
+      if(Math.abs(d[0]*d2[1]-d[1]*d2[0])>.05)continue;                                   // parallel
+      const t=p=>p[0]*d[0]+p[1]*d[1],nrm=p=>p[0]*d[1]-p[1]*d[0];
+      const gap=Math.abs(nrm(s2.a)-nrm(s1.a))/inch,err=Math.abs(gap-W0);if(err>2)continue;
+      const lo=Math.max(Math.min(t(s1.a),t(s1.b)),Math.min(t(s2.a),t(s2.b))),hi=Math.min(Math.max(t(s1.a),t(s1.b)),Math.max(t(s2.a),t(s2.b)));
+      const ov=(hi-lo)/inch;if(ov<1.5||ov>20)continue;                                     // they face each other over a wall's thickness
+      // nothing of the outline may sit between them (otherwise it's not one open gap)
+      const c=(lo+hi)/2,n1v=nrm(s1.a),n2v=nrm(s2.a);
+      const mid=[d[0]*c+d[1]*(n1v+n2v)/2,d[1]*c-d[0]*(n1v+n2v)/2];
+      const far=dist(mid,o.at)/inch/12;if(far>8)continue;
+      const score=err+far*.3;if(!best||score<best.score)best={score,s1,s2,gap,mid,lo,hi,t}}
+    if(best){const key=[best.s1,best.s2].map(s=>s.it.id+":"+s.i).sort().join("|");
+      if(found.some(f=>f.key===key)){found.push({o,dup:true});break}                       // same opening labelled twice
+      for(const s of[best.s1,best.s2]){const n=s.it.pts.length;
+        for(const [j,p] of [[s.i,s.a],[(s.i+1)%n,s.b]]){const tp=best.t(p);if(tp>=best.lo-inch&&tp<=best.hi+inch)s.it.jamb[j]=true}}
+      found.push({o,key,label:o.label+(pocket?" (pocket door)":""),w:W0,pocket,gap:best.gap,page:S.pageNum,at:best.mid});break}
+    else if(pocket)found.push({o,label:o.label,w:o.w,gap:null,page:S.pageNum,at:o.at})}
+  S.openFound=found.filter(f=>!f.dup)
+}
+
+/* ---------- client markups (PDF annotations) ---------- */
+function markupItems(anns){
+  const out=[];
+  for(const a of anns){
+    let pts=null;
+    if(a.subtype==="Polygon"&&a.vertices){const v=a.vertices;
+      pts=typeof v[0]==="number"?Array.from({length:v.length/2},(_,i)=>[v[2*i],v[2*i+1]]):v.map(p=>[p.x,p.y])}
+    else if(a.subtype==="Square"&&a.rect){const[x1,y1,x2,y2]=a.rect;pts=[[x1,y1],[x2,y1],[x2,y2],[x1,y2]]}
+    if(!pts||pts.length<3)continue;
+    // drop repeated closing point
+    if(dist(pts[0],pts[pts.length-1])<.01)pts.pop();
+    const txt=((a.contentsObj&&a.contentsObj.str)||"").replace(/\r/g,"\n").trim();
+    const name=(txt.split("\n")[0]||"Client markup").trim();
+    const lm=txt.match(/([\d,]+(?:\.\d+)?)\s*(?:sf|sq\.?\s*ft|ft²|square\s*f)/i);
+    out.push({id:"m"+(a.id||out.length),kind:"area",name,pts,edges:pts.map(()=>true),page:S.pageNum,source:"Client markup on plan",
+      labelSf:lm?+lm[1].replace(/,/g,""):null})
+  }
+  return out
+}
+
+/* ---------- loading ---------- */
+async function openPdf(src,name,key){
+  try{
+    S.doc=await pdfjsLib.getDocument(src).promise;S.file=name;S.key=key;
+    const st=load();S.items=st.items||[];S.seenMarkup=st.seen||{};S.R=st.R||null;S.scaleLabel=st.scaleLabel||"";S.scaleSrc=st.scaleSrc||"";
+    S.nextId=st.nextId||1;$("access").value=st.access||"";$("exposure").value=st.exposure||"";$("notes").value=st.notes||"";
+    $("empty").hidden=true;await showPage(st.page||1)
+  }catch(e){$("empty").hidden=false;$("empty").innerHTML=`<div class="stop"><b>Could not open that file.</b><br>${esc(String(e.message||e))}</div>`}
+}
+async function showPage(n){
+  if(!S.doc)return;n=Math.min(Math.max(1,n),S.doc.numPages);S.pageNum=n;S.draft=[];S.sel=null;
+  $("pageLbl").textContent=`Page ${n} of ${S.doc.numPages}`;
+  S.page=await S.doc.getPage(n);
+  const base=S.page.getViewport({scale:1});
+  const vw=$("viewer").clientWidth-16,vh=$("viewer").clientHeight-16;
+  S.fit=Math.max(.1,Math.min(vw/base.width,vh/base.height));S.zoom=S.fit;
+  const tc=await S.page.getTextContent();const det=detectScales(tc.items.map(t=>t.str).join("  "));
+  S.openings=readOpenings(tc);
+  if(det.length&&(!S.R||S.scaleSrc==="read from plan")){S.R=det[0].R;S.scaleLabel=det[0].label;S.scaleSrc="read from plan"}
+  fillScaleSelect(det);
+  if(!S.seenMarkup[n]){const anns=await S.page.getAnnotations();const mk=markupItems(anns);
+    mk.forEach(m=>{m.id="i"+(S.nextId++);S.items.push(m)});S.seenMarkup[n]=true}
+  S.snapPts=null;const drawing=render();setTool(S.tool==="cal"?"move":S.tool);save();summary();
+  S.fills=null;
+  buildSnap(S.page).then(r=>{if(S.pageNum!==n)return;S.snapPts=r.grid;S.fills=r.fills;
+    // client markups are only the area they want: fit each one to the real walls once
+    let changed=false;for(const it of pageItems())if(it.source==="Client markup on plan"&&!it.fitDone){it.fitDone=true;if(fitToWalls(it,true))changed=true}
+    if(changed){save();redraw();summary()}});
+  await drawing
+}
+function render(later){
+  // sizes and overlay update at once; the plan image paints in the background
+  if(!S.page)return Promise.resolve();
+  const vp=S.page.getViewport({scale:S.zoom});S.vp=vp;
+  $("stage").style.width=vp.width+"px";$("stage").style.height=vp.height+"px";
+  const ov=$("ov");ov.setAttribute("width",vp.width);ov.setAttribute("height",vp.height);
+  redraw();
+  return later?Promise.resolve():paint();
+}
+function paint(){
+  // Draw only the part of the sheet on screen (plus a margin), so it stays sharp and quick at any zoom.
+  // It draws off screen first and swaps in when done, so the old picture stays up meanwhile (no flashing).
+  const v=$("viewer"),st=$("stage"),vp=S.vp,cv=$("cv"),m=300;
+  const x0=Math.max(0,Math.floor(v.scrollLeft-st.offsetLeft-m)),y0=Math.max(0,Math.floor(v.scrollTop-st.offsetTop-m));
+  const w=Math.max(1,Math.min(vp.width-x0,v.clientWidth+2*m)),h=Math.max(1,Math.min(vp.height-y0,v.clientHeight+2*m));
+  let dpr=window.devicePixelRatio||1;const MAX=16e6;if(w*h*dpr*dpr>MAX)dpr=Math.sqrt(MAX/(w*h));
+  if(S.renderTask)S.renderTask.cancel();
+  const off=document.createElement("canvas");off.width=Math.ceil(w*dpr);off.height=Math.ceil(h*dpr);
+  const task=S.renderTask=S.page.render({canvasContext:off.getContext("2d"),viewport:vp,transform:[dpr,0,0,dpr,-x0*dpr,-y0*dpr]});
+  return task.promise.then(()=>{if(task!==S.renderTask)return;
+    cv.width=off.width;cv.height=off.height;cv.getContext("2d").drawImage(off,0,0);
+    Object.assign(cv.style,{left:x0+"px",top:y0+"px",width:w+"px",height:h+"px"});S.painted={x0,y0,w,h,z:S.zoom}})
+    .catch(e=>{if(e&&e.name!=="RenderingCancelledException")console.error(e)})
+}
+{let t=null;$("viewer").addEventListener("scroll",()=>{clearTimeout(t);t=setTimeout(()=>{if(!S.page||!S.painted)return;
+  const v=$("viewer"),st=$("stage"),p=S.painted,x=v.scrollLeft-st.offsetLeft,y=v.scrollTop-st.offsetTop;
+  if(x<p.x0||y<p.y0||x+v.clientWidth>p.x0+p.w||y+v.clientHeight>p.y0+p.h)paint()},120)})}
+$("file").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>openPdf({data:new Uint8Array(r.result)},f.name,f.name+":"+f.size);r.readAsArrayBuffer(f)};
+// for testing on this computer: ?pdf=relative/path.pdf
+{const q=new URLSearchParams(location.search).get("pdf");if(q&&!/^[a-z]+:/i.test(q))openPdf(q,q.split("/").pop(),q)}
+
+/* ---------- zoom ---------- */
+async function zoomTo(z,cx,cy){
+  if(!S.page)return;const v=$("viewer");const old=S.zoom;z=Math.min(Math.max(z,S.fit*.5),S.fit*24);
+  cx=cx??v.clientWidth/2;cy=cy??v.clientHeight/2;
+  const px=(v.scrollLeft+cx)/old,py=(v.scrollTop+cy)/old;S.zoom=z;
+  const cv=$("cv"),f=z/old;["left","top","width","height"].forEach(k=>cv.style[k]=(parseFloat(cv.style[k])||0)*f+"px");
+  render(true);v.scrollLeft=px*z-cx;v.scrollTop=py*z-cy;await paint()}
+$("zin").onclick=()=>zoomTo(S.zoom*1.5);$("zout").onclick=()=>zoomTo(S.zoom/1.5);$("zfit").onclick=()=>zoomTo(S.fit);
+$("viewer").addEventListener("wheel",e=>{if(!e.ctrlKey&&!e.metaKey)return;e.preventDefault();
+  const r=$("viewer").getBoundingClientRect();zoomTo(S.zoom*(e.deltaY<0?1.25:.8),e.clientX-r.left,e.clientY-r.top)},{passive:false});
+$("prev").onclick=()=>showPage(S.pageNum-1);$("next").onclick=()=>showPage(S.pageNum+1);
+
+/* ---------- coordinates ---------- */
+const toScr=p=>S.vp.convertToViewportPoint(p[0],p[1]);
+const toPdf=s=>S.vp.convertToPdfPoint(s[0],s[1]);
+function evPt(e){const r=$("stage").getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]}
+function placePoint(scr){
+  // snap to a drawing corner first; otherwise keep the line square to the last point
+  const p=toPdf(scr);const sn=nearestSnap(p,14/S.zoom);if(sn)return{p:sn,snapped:true};
+  const last=S.tool==="cal"?S.cal&&S.cal[0]:S.tool==="check"?S.check&&S.check[0]:S.draft[S.draft.length-1];
+  if(last&&$("ortho").checked){const ls=toScr(last);const dx=scr[0]-ls[0],dy=scr[1]-ls[1];
+    if(Math.abs(dy)<Math.abs(dx)*.14)return{p:toPdf([scr[0],ls[1]])};if(Math.abs(dx)<Math.abs(dy)*.14)return{p:toPdf([ls[0],scr[1]])}}
+  return{p}
+}
+
+/* ---------- tools ---------- */
+const HINTS={move:"Drag to move around the plan. Ctrl + scroll (or the + and − buttons) to zoom.",
+  area:"Tap each corner of the area to polish. Tap the first corner again, or Finish, to close it.",
+  cut:"Cut-out: tap the corners of a part to leave out (column, island, carpet). Its edges count as edging.",
+  joint:"Control joint: tap along the joint line, then Finish. Each joint line is measured separately.",
+  check:"Check the scale: tap both ends of a dimension printed on the plan and compare.",
+  edit:"Drag a point to move it. Tap a corner to stop counting it (filled = counted, slashed = switched off, square = door jamb from a rough opening). Double-tap a side to add a corner point for a jog the outline missed; double-tap a point to remove it. Tap the small square on a side to mark it open (no wall, no edging).",
+  cal:"Set scale: tap both ends of a dimension you know, then type its length."};
+function setTool(t){S.tool=t;S.draft=[];S.cal=null;S.check=null;
+  document.querySelectorAll("#tools button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+  $("hint").textContent=S.R||t==="move"||t==="cal"?HINTS[t]:"Pick the drawing scale first (top bar). "+HINTS[t];
+  $("draftBtns").hidden=!["area","cut","joint"].includes(t);redraw()}
+$("tools").onclick=e=>{const b=e.target.closest("button");if(b)setTool(b.dataset.t)};
+function finishDraft(){
+  const k=S.tool;const need=k==="joint"?2:3;if(S.draft.length<need)return;
+  const pts=S.draft.slice();const count=S.items.filter(i=>i.kind===k).length+1;
+  const name=k==="area"?`Area ${count}`:k==="cut"?`Cut-out ${count}`:`Joint ${count}`;
+  S.items.push({id:"i"+(S.nextId++),kind:k,name,pts,edges:pts.map(()=>true),page:S.pageNum,source:"Traced"});
+  S.draft=[];save();redraw();summary()}
+$("finish").onclick=finishDraft;$("undo").onclick=()=>{S.draft.pop();redraw()};$("cancel").onclick=()=>{S.draft=[];redraw()};
+document.addEventListener("keydown",e=>{if(e.target.matches("input,textarea,select"))return;
+  if(e.key==="Enter")finishDraft();else if(e.key==="Escape"){S.draft=[];redraw()}else if(e.key==="Backspace"&&S.draft.length){e.preventDefault();S.draft.pop();redraw()}});
+
+/* ---------- pointer handling ---------- */
+let drag=null;
+$("stage").addEventListener("pointerdown",e=>{if(!S.page)return;$("stage").setPointerCapture(e.pointerId);
+  const s=evPt(e);drag={sx:e.clientX,sy:e.clientY,sl:$("viewer").scrollLeft,st:$("viewer").scrollTop,moved:false,s,vertex:null};
+  if(S.tool==="edit"){const h=hitVertex(s);if(h)drag.vertex=h}});
+$("stage").addEventListener("pointermove",e=>{if(!S.page)return;const s=evPt(e);
+  if(drag){const dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;if(Math.hypot(dx,dy)>6)drag.moved=true;
+    if(drag.vertex&&drag.moved){const it=S.items.find(i=>i.id===drag.vertex.id);const sn=nearestSnap(toPdf(s),14/S.zoom);
+      it.pts[drag.vertex.i]=sn||toPdf(s);redraw();summary();return}
+    if(drag.moved){$("viewer").scrollLeft=drag.sl-dx;$("viewer").scrollTop=drag.st-dy}return}
+  if(["area","cut","joint","cal","check"].includes(S.tool)){S.hover=placePoint(s);redraw()}});
+$("stage").addEventListener("pointerup",e=>{if(!drag)return;const d=drag;drag=null;
+  if(d.vertex){if(d.moved){save();summary();return}
+    const it=S.items.find(i=>i.id===d.vertex.id);
+    if(isDoubleTap(d.s)&&it.kind!=="joint"&&it.pts.length>3){removeVertex(it,d.vertex.i)}   // double-tap removes a corner point
+    else if(cornerStatus(it)[d.vertex.i]){it.skip=it.skip||[];it.skip[d.vertex.i]=!it.skip[d.vertex.i]}
+    save();redraw();summary();return}
+  if(d.moved)return;tap(d.s)});
+$("stage").addEventListener("pointerleave",()=>{S.hover=null;redraw()});
+function tap(s){
+  const t=S.tool;
+  if(t==="area"||t==="cut"||t==="joint"){
+    if(t!=="joint"&&S.draft.length>=3){const f=toScr(S.draft[0]);if(Math.hypot(f[0]-s[0],f[1]-s[1])<14){finishDraft();return}}
+    S.draft.push(placePoint(s).p);redraw();return}
+  if(t==="check"){const p=placePoint(s).p;if(!S.check||S.check.length===2)S.check=[p];else S.check.push(p);redraw();
+    if(S.check.length===2&&S.R)$("hint").innerHTML=`Measured: <b>${fmtFtIn(ptToFt(dist(S.check[0],S.check[1])))}</b>. Does it match the number printed on the plan? Tap again to check another.`;return}
+  if(t==="cal"){const p=placePoint(s).p;if(!S.cal||S.cal.length===2)S.cal=[p];else S.cal.push(p);redraw();
+    if(S.cal.length===2)setTimeout(()=>{const v=prompt("Real length of that line, in feet and inches (e.g. 24'-11\" or 24.9):");
+      const ft=parseLen(v);if(ft>0){const paperIn=dist(S.cal[0],S.cal[1])/72;S.R=ft*12/paperIn;S.scaleLabel=`Measured: ${fmtFtIn(ft)} line`;
+        S.scaleSrc="set from a known length";fillScaleSelect([]);save();summary();setTool("move")}else{S.cal=null;redraw()}},30);return}
+  if(t==="edit"){const m=hitMid(s);
+    if(!m){const sd=hitSide(s);if(sd&&isDoubleTap(s)){insertVertex(sd);return}}if(m){const it=S.items.find(i=>i.id===m.id);it.edges[m.i]=!it.edges[m.i];save();redraw();summary();return}
+    const it=hitItem(s);S.sel=it?it.id:null;redraw();summary()}
+}
+let lastTap={t:0,s:[0,0]};
+function isDoubleTap(s){const now=Date.now();const dbl=now-lastTap.t<400&&Math.hypot(s[0]-lastTap.s[0],s[1]-lastTap.s[1])<16;
+  lastTap=dbl?{t:0,s:[0,0]}:{t:now,s};return dbl}
+function hitSide(s){for(const it of pageItems()){const n=it.pts.length,closed=it.kind!=="joint";
+  for(let i=0;i<(closed?n:n-1);i++){const a=toScr(it.pts[i]),b=toScr(it.pts[(i+1)%n]);if(segDist(s,a,b)<8)return{it,i,s}}}return null}
+function insertVertex({it,i,s}){
+  // put the new point on the side (or on a drawing corner right there), then the user drags it onto the jog
+  const a=it.pts[i],b=it.pts[(i+1)%it.pts.length],p=toPdf(s);const dx=b[0]-a[0],dy=b[1]-a[1];
+  const t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy||1)));
+  const q=nearestSnap(p,14/S.zoom)||[a[0]+t*dx,a[1]+t*dy];
+  it.pts.splice(i+1,0,q);it.edges.splice(i+1,0,it.edges[i]);if(it.skip)it.skip.splice(i+1,0,false);
+  $("hint").textContent="Corner point added. Drag it onto the jog; add more the same way.";save();redraw();summary()}
+function removeVertex(it,i){it.pts.splice(i,1);it.edges.splice(i,1);if(it.skip)it.skip.splice(i,1)}
+function parseLen(v){if(!v)return NaN;v=v.trim().replace(/[’′]/g,"'").replace(/[”″]/g,'"');
+  let m=v.match(/^(\d+(?:\.\d+)?)\s*'\s*-?\s*(?:([\d\s\/]+)\s*"?)?$/);if(m)return +m[1]+(m[2]?(parseInches(m[2])||0)/12:0);
+  m=v.match(/^(\d+(?:\.\d+)?)$/);return m?+m[1]:NaN}
+function pageItems(){return S.items.filter(i=>i.page===S.pageNum)}
+function hitVertex(s){for(const it of pageItems())for(let i=0;i<it.pts.length;i++){const q=toScr(it.pts[i]);if(Math.hypot(q[0]-s[0],q[1]-s[1])<12)return{id:it.id,i}}return null}
+function hitMid(s){for(const it of pageItems()){if(it.kind==="joint")continue;const n=it.pts.length;
+  for(let i=0;i<n;i++){const a=toScr(it.pts[i]),b=toScr(it.pts[(i+1)%n]);const m=[(a[0]+b[0])/2,(a[1]+b[1])/2];
+    if(Math.hypot(m[0]-s[0],m[1]-s[1])<10)return{id:it.id,i}}}return null}
+function hitItem(s){const p=toPdf(s);for(const it of pageItems().slice().reverse()){if(it.kind==="joint"){
+    for(let i=0;i<it.pts.length-1;i++){const a=toScr(it.pts[i]),b=toScr(it.pts[i+1]);if(segDist(s,a,b)<8)return it}}
+  else if(inside(p,it.pts))return it}return null}
+function segDist(p,a,b){const dx=b[0]-a[0],dy=b[1]-a[1];const t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy||1)));
+  return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy)}
+function inside(p,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const[xi,yi]=poly[i],[xj,yj]=poly[j];
+  if((yi>p[1])!==(yj>p[1])&&p[0]<(xj-xi)*(p[1]-yi)/(yj-yi)+xi)c=!c}return c}
+
+/* ---------- drawing the overlay ---------- */
+const COL={area:"var(--area)",cut:"var(--cut)",joint:"var(--joint)"};
+function redraw(){
+  const ov=$("ov");if(!S.vp){ov.innerHTML="";return}
+  const P=pts=>pts.map(p=>toScr(p).map(v=>v.toFixed(1)).join(",")).join(" ");let h="";
+  for(const it of pageItems())if(it.orig)h+=`<polygon points="${P(it.orig)}" fill="none" stroke="#2B6A35" stroke-width="1.5" stroke-dasharray="6 4"/>`;
+  for(const it of pageItems()){const c=COL[it.kind],sel=S.sel===it.id;
+    if(it.kind==="joint"){h+=`<polyline points="${P(it.pts)}" fill="none" stroke="${c}" stroke-width="${sel?5:3.5}" stroke-dasharray="10 5"/>`;continue}
+    h+=`<polygon points="${P(it.pts)}" fill="${c}" fill-opacity="${it.kind==="cut"?.28:.16}" stroke="none"/>`;
+    const n=it.pts.length;
+    for(let i=0;i<n;i++){const a=toScr(it.pts[i]),b=toScr(it.pts[(i+1)%n]);
+      h+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${c}" stroke-width="${sel?3.5:2.5}" ${it.edges[i]?"":'stroke-dasharray="3 5" stroke-opacity=".6"'}/>`}
+    const ctr=centroid(it.pts),m=S.R?measure(it):null,cs=toScr(ctr);
+    if(m)h+=`<text x="${cs[0]}" y="${cs[1]}" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-weight="600" font-size="13" fill="${c}" stroke="#fff" stroke-width="3" paint-order="stroke">${esc(it.name)}: ${n0(it.kind==="cut"?-m.sf:m.sf)} sf</text>`}
+  if(S.tool==="edit")for(const it of pageItems()){const n=it.pts.length;
+    const cst=cornerStatus(it);
+    it.pts.forEach((p,i)=>{const q=toScr(p),k=cst[i];
+      if(k==="in"||k==="out")h+=`<circle cx="${q[0]}" cy="${q[1]}" r="6.5" fill="${COL[it.kind]}" stroke="#fff" stroke-width="2"/>`;
+      else if(k==="jamb")h+=`<rect x="${q[0]-5.5}" y="${q[1]-5.5}" width="11" height="11" fill="#fff" stroke="${COL[it.kind]}" stroke-width="2"/>`;
+      else if(k==="off")h+=`<circle cx="${q[0]}" cy="${q[1]}" r="6.5" fill="#fff" stroke="${COL[it.kind]}" stroke-width="2"/><line x1="${q[0]-5}" y1="${q[1]+5}" x2="${q[0]+5}" y2="${q[1]-5}" stroke="${COL[it.kind]}" stroke-width="2"/>`;
+      else h+=`<circle cx="${q[0]}" cy="${q[1]}" r="4.5" fill="#fff" stroke="${COL[it.kind]}" stroke-width="1.5"/>`});
+    if(it.kind!=="joint")for(let i=0;i<n;i++){const a=toScr(it.pts[i]),b=toScr(it.pts[(i+1)%n]);const x=(a[0]+b[0])/2,y=(a[1]+b[1])/2;
+      h+=`<rect x="${x-5}" y="${y-5}" width="10" height="10" fill="${it.edges[i]?COL[it.kind]:"#fff"}" stroke="${COL[it.kind]}" stroke-width="2"/>`}}
+  const dr=S.tool==="cal"?S.cal||[]:S.tool==="check"?S.check||[]:S.draft;
+  if(dr.length||S.hover){const pts=dr.slice();const hv=S.hover&&!(dr.length===2&&(S.tool==="cal"||S.tool==="check"))?S.hover.p:null;
+    if(hv)pts.push(hv);h+=`<polyline points="${P(pts)}" fill="none" stroke="var(--draft)" stroke-width="2.5"/>`;
+    dr.forEach(p=>{const q=toScr(p);h+=`<circle cx="${q[0]}" cy="${q[1]}" r="4.5" fill="var(--draft)"/>`});
+    if(hv){const q=toScr(hv);h+=`<circle cx="${q[0]}" cy="${q[1]}" r="${S.hover.snapped?8:5}" fill="none" stroke="var(--draft)" stroke-width="2"/>`;
+      if(dr.length&&S.R){const l=ptToFt(dist(dr[dr.length-1],hv));h+=`<text x="${q[0]+12}" y="${q[1]-10}" font-family="IBM Plex Mono,monospace" font-size="13" fill="var(--draft)" stroke="#fff" stroke-width="3" paint-order="stroke">${fmtFtIn(l)}</text>`}}}
+  ov.innerHTML=h
+}
+function centroid(p){let x=0,y=0;p.forEach(q=>{x+=q[0];y+=q[1]});return[x/p.length,y/p.length]}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+/* ---------- list, totals, sheet ---------- */
+function summary(){
+  if(S.R&&S.page)markOpenings();
+  const L=$("list");L.innerHTML="";
+  if(!S.items.length)L.innerHTML='<div class="small">Nothing measured yet.</div>';
+  let sf=0,edge=0,joint=0,ins=0,outs=0,small=0,off=0,jamb=0;
+  for(const it of S.items){const m=S.R?measure(it):null;const d=document.createElement("div");
+    d.className="item"+(S.sel===it.id?" sel":"");
+    let nums="",chk="";
+    if(!m)nums="Pick the scale to measure.";
+    else if(it.kind==="joint"){nums=`${n1(m.lf)} lin ft`;joint+=m.lf}
+    else{const sg=it.kind==="cut"?-1:1;sf+=sg*m.sf;edge+=m.edge;ins+=m.inside;outs+=m.outside;small+=m.small;off+=m.off;jamb+=m.jamb;
+      nums=`${sg<0?"−":""}${n1(m.sf)} sq ft · edges ${n1(m.edge)} lin ft · corners ${m.inside+m.outside}`;
+      if(it.fitted){const kids=S.items.filter(x=>x.parent===it.id).map(measure);
+        const net=m.sf+kids.reduce((t,x,j)=>t+(S.items.filter(y=>y.parent===it.id)[j].kind==="cut"?-x.sf:x.sf),0);
+        const cor=m.inside+m.outside+kids.reduce((t,x)=>t+x.inside+x.outside,0),ed=m.edge+kids.reduce((t,x)=>t+x.edge,0);
+        chk+=`<div class="check warn">${it.source==="Client markup on plan"?"Client's outline":"Outline as traced"}: ${n0(it.fitted.sf)} sf, ${it.fitted.corners} corners.<br>Fitted to the walls: ${n0(net)} sf net, ${cor} corners, ${n0(ed)} lin ft of edges (including what was found inside).${it.pockets?` ${it.pockets} pocket-door slot${it.pockets>1?"s":""} treated as wall.`:""} Check the fit in Edit.</div>`}
+      if(it.labelSf!=null){const own=it.fitted?it.fitted.sf:m.sf,diff=Math.abs(own-it.labelSf)/it.labelSf;   // label vs the client's own outline
+        chk=(diff<.01?`<div class="check ok">✓ Plan label says ${n0(it.labelSf)} sf: matches the client's outline, so the scale is right.</div>`
+          :`<div class="check warn">Plan label says ${n0(it.labelSf)} sf, the client's outline measures ${n0(own)}. Check the scale.</div>`)+chk}}
+    d.innerHTML=`<div class="top"><span class="sw" style="background:${COL[it.kind]}"></span><input value="${esc(it.name)}" aria-label="Name">
+      <span class="small">p.${it.page}</span><button title="Remove" aria-label="Remove">×</button></div>
+      <div class="nums">${nums}</div><div class="small">${esc(it.source)}${it.fitted?", fitted to walls":""}</div>${chk}
+      ${it.kind==="area"&&!it.parent?`<div class="row noprint">${it.fitted?'<button data-a="unfit">Undo fit</button><button data-a="fit">Fit again</button>':'<button data-a="fit">Fit to walls</button>'}</div>`:""}`;
+    d.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{if(b.dataset.a==="unfit")unfit(it);
+      else if(it.page!==S.pageNum||!S.fills){alert("Open this page and wait a moment for the drawing to load, then try again.");return}
+      else if(!fitToWalls(it,false))return;save();redraw();summary()});
+    d.querySelector("input").onchange=e=>{it.name=e.target.value;save();redraw();summary()};
+    d.querySelector("button").onclick=()=>{if(confirm(`Remove "${it.name}"?`)){S.items=S.items.filter(x=>x!==it&&x.parent!==it.id);save();redraw();summary()}};
+    d.onclick=e=>{if(e.target.closest("button,input"))return;S.sel=it.id;if(it.page!==S.pageNum)showPage(it.page);else{redraw();summary()}};
+    L.appendChild(d)}
+  $("tSf").textContent=`${n0(sf)} sq ft`;$("tEdge").textContent=`${n0(edge)} lin ft`;$("tJoint").textContent=`${n0(joint)} lin ft`;
+  $("tCorn").textContent=ins+outs;$("cornNote").textContent=ins+outs+off?`${ins} inside, ${outs} outside. ${small} of them are at small jogs (a side under 1 ft).${off?` ${off} switched off (not counted).`:""} Corners count only where the outline has them: if the plan shows a jog the outline skips, add it in Edit. Door jambs: not corners (Todd), but their length stays in edges.`:"";
+  // openings: only those in or next to the measured areas
+  const near=o=>pageItems().some(it=>it.kind!=="joint"&&(inside(o.at,it.pts)||it.pts.some((a,i)=>segDist(o.at,a,it.pts[(i+1)%it.pts.length])<6*72/S.R*12)));
+  S.openList=(S.openFound||[]).filter(o=>o.gap!=null||near(o)).filter(o=>near(o));
+  if(jamb)$("cornNote").textContent+=` ${jamb} door-jamb corners not counted (Todd's rule; tick "Count door-jamb corners" to include them).`;
+  $("openNote").innerHTML=S.openList&&S.openList.length?"<b>Openings:</b> "+S.openList.map(o=>o.gap!=null
+      ?`${esc(o.label)} <span class="${Math.abs(o.gap-o.w)<=2?"ok":"warn"}">jambs ${n1(o.gap)}" apart</span>`:`${esc(o.label)} <span class="warn">not found, check</span>`).join(" · "):"";
+  S.tot={sf,edge,joint,ins,outs,small,off,jamb};sheet()
+}
+function sheet(){
+  const t=S.tot||{sf:0,edge:0,joint:0,ins:0,outs:0,small:0};const acc=$("access").value,exp=$("exposure").value;
+  const L=[`TAKEOFF: ${S.file||"(no plan)"}`,`Scale: ${S.scaleLabel||"not set"}${S.scaleSrc?" ("+S.scaleSrc+")":""}`,""];
+  for(const it of S.items){if(!S.R)break;const m=measure(it);
+    if(it.kind==="joint")L.push(`  ${it.name} (p.${it.page}): ${n1(m.lf)} lin ft`);
+    else L.push(`  ${it.name} (p.${it.page}): ${it.kind==="cut"?"minus ":""}${n1(m.sf)} sq ft, edges ${n1(m.edge)} lin ft, corners ${m.inside+m.outside}`)}
+  L.push("",`Concrete:        ${n0(t.sf)} sq ft`,`Edges:           ${n0(t.edge)} lin ft`,`Control joints:  ${n0(t.joint)} lin ft`,
+    `Corners:         ${t.ins+t.outs} (${t.ins} inside, ${t.outs} outside; ${t.small} at jogs under 1 ft${t.jamb?`; ${t.jamb} door-jamb corners not counted`:""}${t.off?`; ${t.off} switched off`:""})`,`Access:          ${acc||"not set"}`,`Exposure:        ${exp||"not set"}`);
+  if($("notes").value)L.push(`Notes:           ${$("notes").value}`);
+  if(S.openList&&S.openList.length){L.push("","Openings (rough openings read from the plan):");
+    for(const o of S.openList)L.push(o.gap!=null?`  ${o.label}: jambs ${n1(o.gap)}" apart on the drawing ${o.pocket?`(about a ${Math.round((o.w*2-2)/2)}" pocket door: it needs the same space again inside the wall to slide into when open)`:Math.abs(o.gap-o.w)<=2?"(fits: a rough opening leaves room to shim)":"(CHECK)"}`
+      :`  ${o.label}: jambs not found in the outline, CHECK this opening`)}
+  L.push("","Measured from the plan's lines and stated scale. Check on site before quoting.");
+  $("out").value=L.join("\n")
+}
+function quoteLine(){const t=S.tot||{};const exp=$("exposure").value;
+  let s=`${n0(t.sf||0)} square feet`;if(exp)s+=` ${exp} exposure`;s+=` with ${n0(t.edge||0)} feet of edging`;return s}
+async function copyText(t,msg){try{await navigator.clipboard.writeText(t);$("copied").textContent=msg}
+  catch{$("out").focus();$("out").select();$("copied").textContent="Select and copy the text above."}}
+$("copyQ").onclick=()=>copyText(quoteLine(),`Copied: "${quoteLine()}". Paste it into the Quote Desk.`);
+$("copyAll").onclick=()=>copyText($("out").value,"Takeoff sheet copied.");
+$("print").onclick=()=>window.print();
+$("jambs").onchange=()=>{redraw();summary()};
+["access","exposure","notes"].forEach(id=>$(id).addEventListener("input",()=>{save();sheet()}));
+
+/* ---------- remember work per plan (this browser only) ---------- */
+function save(){if(!S.key)return;try{localStorage.setItem("npc:"+S.key,JSON.stringify({items:S.items,seen:S.seenMarkup,R:S.R,
+  scaleLabel:S.scaleLabel,scaleSrc:S.scaleSrc,nextId:S.nextId,page:S.pageNum,access:$("access").value,exposure:$("exposure").value,notes:$("notes").value}))}catch{}}
+function load(){try{return JSON.parse(localStorage.getItem("npc:"+S.key))||{}}catch{return{}}}
+window.addEventListener("resize",()=>{if(S.page&&S.zoom===S.fit){const b=S.page.getViewport({scale:1});
+  S.fit=Math.max(.1,Math.min(($("viewer").clientWidth-16)/b.width,($("viewer").clientHeight-16)/b.height))}});
+setTool("move");summary();
+</script>
+</body>
+</html>
